@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum user_type {
+  super_admin
+  admin
+  user
+}
+
+model Role {
+  id        String   @id @default(uuid()) @map("_id")
+  name      String
+  role      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User[]
+}
+
+model User {
+  id                  String             @id @default(uuid()) @map("_id")
+  username            String             @unique
+  email               String             @unique
+  roleId              String
+  role                Role               @relation(fields: [roleId], references: [id])
+  isVerified          Boolean            @default(false)
+  isDelete            Boolean            @default(false)
+  deleteAt            DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  ResetPassword       ResetPassword[]
+  Profile             Profile[]
+  Featured            Featured?
+  Activity            Activity[]
+  DonationRequested   DonationRequested? @relation(fields: [donationRequestedId], references: [id])
+  donationRequestedId String?
+  donationVerifier    DonationHistory[]  @relation("donationVerifier")
+  donationRequester   DonationHistory[]  @relation("donationRequester")
+  donationReader      DonationHistory[]  @relation("donationReader")
+}
+
+model ResetPassword {
+  id        String   @id @default(uuid()) @map("_id")
+  token     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum blood_type {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+model Profile {
+  id            String     @id @default(uuid()) @map("_id")
+  firstName     String
+  lastName      String
+  displayName   String?
+  fatherName    String
+  motherName    String
+  address       String?
+  streetAddress String
+  upzila        String
+  zila          String
+  phoneNo       String
+  lastDonation  DateTime?
+  bloodGroup    blood_type
+  image         String
+  userId        String     @unique
+  user          User       @relation(fields: [userId], references: [id])
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Featured {
+  id        String    @id @default(uuid()) @map("_id")
+  start     DateTime?
+  end       DateTime?
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model DonationHistory {
+  id            String   @id @default(uuid()) @map("_id")
+  date          DateTime
+  address       String?
+  streetAddress String
+  upzila        String
+  zila          String
+  phoneNo       String?
+  reason        String
+  userId        String   @unique
+  user          User     @relation("donationVerifier", fields: [userId], references: [id])
+  requestedId   String?
+  request       User?    @relation("donationRequester", fields: [requestedId], references: [id])
+  readBydId     String[]
+  readBy        User     @relation("donationReader", fields: [readBydId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum donation_status {
+  request
+  verified
+  progress
+  ready
+  hold
+  completed
+}
+
+model DonationRequested {
+  id        String   @id @default(uuid()) @map("_id")
+  // userId       String   
+  // user         User     @relation(fields: [userId], references: [id])
+  firstName String
+  lastName  String
+  email     String
+  phone     String
+  address   String
+  date      DateTime
+  blood     String
+  reason    String
+  // verifiedById String
+  // verifiedBy   User     @relation(fields: [userId], references: [id])
+  // status 
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // User      User[]
+  User      User[]
+}
+
+model Activity {
+  id          String   @id @default(uuid()) @map("_id")
+  message     String
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(uuid()) @map("_id")
+  message     String
+  createdById String
+  // createdBy   User     @relation(fields: [createdById], references: [id])
+  // receiverId  String[]
+  // reciever    User[]   @relation(fields: [receiverId], references: [id])
+  // readerId    String[]
+  // readers     User[]   @relation(fields: [readerId], references: [id])
+  isAll       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
