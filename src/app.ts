@@ -5,8 +5,7 @@ const prisma = new PrismaClient();
 const app = express();
 
 app.get("/", async (req: Request, res: Response) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
+  res.status(200).json("ok it working");
 });
 
 app.listen(9000, () => {
