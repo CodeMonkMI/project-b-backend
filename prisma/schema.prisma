@@ -26,25 +26,31 @@ model Role {
 }
 
 model User {
-  id                  String             @id @default(uuid()) @map("_id")
-  username            String             @unique
-  email               String             @unique
-  roleId              String
-  role                Role               @relation(fields: [roleId], references: [id])
-  isVerified          Boolean            @default(false)
-  isDelete            Boolean            @default(false)
-  deleteAt            DateTime?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  ResetPassword       ResetPassword[]
-  Profile             Profile[]
-  Featured            Featured?
-  Activity            Activity[]
-  DonationRequested   DonationRequested? @relation(fields: [donationRequestedId], references: [id])
-  donationRequestedId String?
-  donationVerifier    DonationHistory[]  @relation("donationVerifier")
-  donationRequester   DonationHistory[]  @relation("donationRequester")
-  donationReader      DonationHistory[]  @relation("donationReader")
+  id                       String              @id @default(uuid()) @map("_id")
+  username                 String              @unique
+  email                    String              @unique
+  password                 String
+  roleId                   String
+  role                     Role                @relation(fields: [roleId], references: [id])
+  Profile                  Profile?
+  isVerified               Boolean             @default(false)
+  isDelete                 Boolean             @default(false)
+  deleteAt                 DateTime?
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+  ResetPassword            ResetPassword[]
+  Featured                 Featured?
+  Activity                 Activity[]
+  DonationGivenHistory     DonationHistory[]   @relation("donationGivenBy")
+  DonationRequestedHistory DonationHistory[]   @relation("donationRequester")
+  DonationReadingHistory   DonationHistory[]   @relation("donationReader")
+  DonationRequested        DonationRequested[] @relation(name: "requestedBy")
+  DonationVerified         DonationRequested[] @relation(name: "verifiedBy")
+  NotificationCreated      Notification[]      @relation(name: "createdBy")
+  recievedNotificationIds  String[]
+  NotificationRecieved     Notification[]      @relation(name: "reciever", fields: [recievedNotificationIds], references: [id])
+  readsNotificationIds     String[]
+  NotificationReads        Notification[]      @relation(name: "reader", fields: [readsNotificationIds], references: [id])
 }
 
 model ResetPassword {
@@ -72,16 +78,16 @@ model Profile {
   firstName     String
   lastName      String
   displayName   String?
-  fatherName    String
-  motherName    String
+  fatherName    String?
+  motherName    String?
   address       String?
-  streetAddress String
-  upzila        String
-  zila          String
-  phoneNo       String
+  streetAddress String?
+  upzila        String?
+  zila          String?
+  phoneNo       String?
   lastDonation  DateTime?
   bloodGroup    blood_type
-  image         String
+  image         String?
   userId        String     @unique
   user          User       @relation(fields: [userId], references: [id])
   createdAt     DateTime   @default(now())
@@ -107,8 +113,8 @@ model DonationHistory {
   zila          String
   phoneNo       String?
   reason        String
-  userId        String   @unique
-  user          User     @relation("donationVerifier", fields: [userId], references: [id])
+  userId        String
+  user          User     @relation("donationGivenBy", fields: [userId], references: [id])
   requestedId   String?
   request       User?    @relation("donationRequester", fields: [requestedId], references: [id])
   readBydId     String[]
@@ -127,25 +133,23 @@ enum donation_status {
 }
 
 model DonationRequested {
-  id        String   @id @default(uuid()) @map("_id")
-  // userId       String   
-  // user         User     @relation(fields: [userId], references: [id])
-  firstName String
-  lastName  String
-  email     String
-  phone     String
-  address   String
-  date      DateTime
-  blood     String
-  reason    String
-  // verifiedById String
-  // verifiedBy   User     @relation(fields: [userId], references: [id])
-  // status 
+  id            String          @id @default(uuid()) @map("_id")
+  requestedById String
+  requestedBy   User            @relation(fields: [requestedById], references: [id], name: "requestedBy")
+  firstName     String
+  lastName      String
+  email         String
+  phone         String
+  address       String
+  date          DateTime
+  blood         String
+  reason        String
+  verifiedById  String
+  verifiedBy    User            @relation(fields: [verifiedById], references: [id], name: "verifiedBy")
+  status        donation_status
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  // User      User[]
-  User      User[]
 }
 
 model Activity {
@@ -161,11 +165,11 @@ model Notification {
   id          String   @id @default(uuid()) @map("_id")
   message     String
   createdById String
-  // createdBy   User     @relation(fields: [createdById], references: [id])
-  // receiverId  String[]
-  // reciever    User[]   @relation(fields: [receiverId], references: [id])
-  // readerId    String[]
-  // readers     User[]   @relation(fields: [readerId], references: [id])
+  createdBy   User     @relation(fields: [createdById], references: [id], name: "createdBy")
+  receiverId  String[]
+  reciever    User[]   @relation(fields: [receiverId], references: [id], name: "reciever")
+  readerId    String[]
+  readers     User[]   @relation(fields: [readerId], references: [id], name: "reader")
   isAll       Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -1,12 +1,11 @@
-import { PrismaClient } from "@prisma/client";
-import express, { Request, Response } from "express";
+import express, { Express } from "express";
+import setUpMiddleware from "./middleware";
+import setRoutes from "./routes";
 
-const prisma = new PrismaClient();
-const app = express();
+const app: Express = express();
 
-app.get("/", async (req: Request, res: Response) => {
-  res.status(200).json("ok it working");
-});
+setUpMiddleware(app);
+setRoutes(app);
 
 app.listen(9000, () => {
   console.log("Server is running on port 9000");
