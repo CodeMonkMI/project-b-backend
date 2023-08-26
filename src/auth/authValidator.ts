@@ -5,11 +5,6 @@ import { BLOOD_GROUPS } from "./authHelpers";
 const prisma = new PrismaClient();
 
 const validator = {
-  signInValidator: [
-    body("username").not().isEmpty().withMessage("Username is required!"),
-    body("password").not().isEmpty().withMessage("Password is required!"),
-  ],
-
   nameValidator: [
     body("name")
       .not()
@@ -44,6 +39,11 @@ const validator = {
       }),
   ],
 };
+
+export const signInValidator = [
+  body("username").not().isEmpty().withMessage("Username is required!"),
+  body("password").not().isEmpty().withMessage("Password is required!"),
+];
 
 export const signUpValidator = [
   body("firstName")

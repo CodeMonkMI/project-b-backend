@@ -8,11 +8,10 @@ import {
   signUp,
   updatePassword,
 } from "./authController";
-import { signUpValidator } from "./authValidator";
+import { signInValidator, signUpValidator } from "./authValidator";
 
 const authRouter: Router = express.Router();
-authRouter.post("/sign-in", signIn);
-
+authRouter.post("/sign-in", signInValidator, errorResponse, signIn);
 authRouter.post("/sign-up", signUpValidator, errorResponse, signUp);
 authRouter.post("/forgot-password", forgotPassword);
 authRouter.post("/recover-password", recoverAccount);
