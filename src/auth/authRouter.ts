@@ -8,6 +8,7 @@ import {
   signUp,
   updatePassword,
 } from "./authController";
+import { authenticate } from "./authMiddleware";
 import { signInValidator, signUpValidator } from "./authValidator";
 
 const authRouter: Router = express.Router();
@@ -16,6 +17,6 @@ authRouter.post("/sign-up", signUpValidator, errorResponse, signUp);
 authRouter.post("/forgot-password", forgotPassword);
 authRouter.post("/recover-password", recoverAccount);
 authRouter.patch("/update-password", updatePassword);
-authRouter.post("/me", me);
+authRouter.post("/me", authenticate, me);
 
 export default authRouter;

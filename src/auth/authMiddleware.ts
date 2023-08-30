@@ -14,9 +14,9 @@ const authMiddleware = (passport: any) => {
   passport.use(
     new Strategy(opts, async (payload, done) => {
       try {
-        const user = await prisma.user.findUnique({
+        const user: any = await prisma.user.findUnique({
           where: {
-            id: payload._id,
+            id: payload.id,
           },
         });
         if (!user) return done(null, false);

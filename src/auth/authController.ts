@@ -52,7 +52,7 @@ export const signIn = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Login was successful",
-      data: { token, findUser },
+      data: { token },
     });
   } catch (error) {
     internalServerError(res, error);
@@ -115,4 +115,45 @@ export const signUp = async (req: Request, res: Response) => {
 export const forgotPassword = async (req: Request, res: Response) => {};
 export const recoverAccount = async (req: Request, res: Response) => {};
 export const updatePassword = async (req: Request, res: Response) => {};
-export const me = async (req: Request, res: Response) => {};
+export const me = async (req: Request, res: Response) => {
+  const user: any = req.user;
+  console.log(user.id);
+  try {
+    const userData = await prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        Profile: {
+          select: {
+            firstName: true,
+            lastName: true,
+            displayName: true,
+            fatherName: true,
+            motherName: true,
+            address: true,
+            streetAddress: true,
+            upzila: true,
+            zila: true,
+            phoneNo: true,
+            lastDonation: true,
+            bloodGroup: true,
+            image: true,
+          },
+        },
+        role: {
+          select: {
+            name: true,
+            role: true,
+          },
+        },
+      },
+    });
+    return res.status(200).json(userData);
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
