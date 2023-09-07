@@ -16,7 +16,7 @@ import { createNewValidator } from "./userValidator";
 const authRouter: Router = express.Router();
 authRouter.get("/", authenticate, all);
 authRouter.post("/", createNewValidator, errorResponse, create);
-authRouter.get("/:id", single);
+authRouter.get("/:username", single);
 authRouter.patch("/:id", update);
 authRouter.delete("/remove/:id", remove);
 authRouter.delete("/remove/:id/confirm", removeConfirm);

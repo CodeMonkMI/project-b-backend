@@ -74,7 +74,52 @@ export const create = async (req: Request, res: Response) => {
   });
 };
 export const update = async (req: Request, res: Response) => {};
-export const single = async (req: Request, res: Response) => {};
+
+interface CreateParams {
+  username: string;
+}
+
+export const single = async (req: Request<CreateParams>, res: Response) => {
+  const { username } = req.params;
+  try {
+    const userData = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: username }, { username }],
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        Profile: {
+          select: {
+            firstName: true,
+            lastName: true,
+            displayName: true,
+            fatherName: true,
+            motherName: true,
+            address: true,
+            streetAddress: true,
+            upzila: true,
+            zila: true,
+            phoneNo: true,
+            lastDonation: true,
+            bloodGroup: true,
+            image: true,
+          },
+        },
+        role: {
+          select: {
+            name: true,
+            role: true,
+          },
+        },
+      },
+    });
+    return res.status(200).json(userData);
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
 export const remove = async (req: Request, res: Response) => {};
 export const removeConfirm = async (req: Request, res: Response) => {};
 export const promote = async (req: Request, res: Response) => {};
