@@ -155,7 +155,7 @@ export const removeConfirm = async (req: Request, res: Response) => {
       where: {
         OR: [{ username }, { email: username }],
       },
-      data: { isDelete: true },
+      data: { deleteAt: new Date(Date.now()) },
     });
     return res.status(200).json({
       isSuccess: true,
