@@ -21,3 +21,9 @@ export const randomPassword = (length: number) => {
   }
   return password;
 };
+
+export const nextRoleName = (name: string) => {
+  if (name === "user") return "admin";
+  if (name === "admin") return "super_admin";
+  return name;
+};

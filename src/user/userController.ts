@@ -1,8 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
-import { randomPassword } from "./userHelpers";
+import { nextRoleName, randomPassword } from "./userHelpers";
 const { JWT_SECRET } = process.env;
 const prisma = new PrismaClient();
 
@@ -166,5 +166,36 @@ export const removeConfirm = async (req: Request, res: Response) => {
     internalServerError(res, error);
   }
 };
-export const promote = async (req: Request, res: Response) => {};
+
+interface PromoteReqBody {
+  username: string;
+  findUserRole: Role;
+}
+export const promote = async (
+  req: Request<{}, {}, PromoteReqBody>,
+  res: Response
+) => {
+  try {
+    const { findUserRole, username } = req.body;
+    const roleText = nextRoleName(findUserRole.role);
+    const findRole = await prisma.role.findFirst({ where: { role: roleText } });
+
+    await prisma.user.updateMany({
+      where: {
+        OR: [{ username }, { email: username }],
+      },
+      data: { roleId: findRole?.id },
+    });
+
+    // send mail to super admin and the user
+
+    return res.status(200).json({
+      isSuccess: true,
+      message: "User delete request sended!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
 export const demote = async (req: Request, res: Response) => {};

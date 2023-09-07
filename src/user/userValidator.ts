@@ -40,76 +40,21 @@ export const createNewValidator = [
     }),
 ];
 
-export const signUpValidator = [
-  body("firstName")
-    .not()
-    .isEmpty()
-    .withMessage("Full Name is required!")
-    .isLength({ max: 50 })
-    .withMessage("Full name must be less than 50 chars!")
-    .trim(),
-  body("lastName")
-    .not()
-    .isEmpty()
-    .withMessage("Full Name is required!")
-    .isLength({ max: 50 })
-    .withMessage("Full name must be less than 50 chars!")
-    .trim(),
-
+export const promoteValidator = [
   body("username")
     .not()
     .isEmpty()
-    .withMessage("Username is required!")
-    .custom(async (username) => {
-      const userData = await prisma.user.findUnique({
-        where: { username, isDelete: false },
+    .withMessage("User is required!")
+    .trim()
+    .custom(async (username, { req }) => {
+      const findUser = await prisma.user.findFirst({
+        where: { OR: [{ username }, { email: username }] },
+        select: {
+          role: true,
+        },
       });
-      console.log(userData);
-      if (userData) throw new Error("Username is already exists!");
-      return true;
-    }),
-  body("email")
-    .not()
-    .isEmpty()
-    .withMessage("Email is required!")
-    .isEmail()
-    .withMessage("Email must be valid!")
-    .custom(async (email) => {
-      const userData = await prisma.user.findUnique({
-        where: { email, isDelete: false },
-      });
-      if (userData) throw new Error("Email is already exists!");
-      return true;
-    })
-    .normalizeEmail(),
-  body("blood")
-    .not()
-    .isEmpty()
-    .withMessage("Blood Group is required!")
-    .custom((blood, { req }) => {
-      // if (BLOOD_GROUPS.includes(blood.toUpperCase())) {
-      //   req.blood = blood.toUpperCase();
-      //   return true;
-      // }
-      throw new Error("Invalid blood group");
-    }),
-  body("password")
-    .not()
-    .isEmpty()
-    .withMessage("Password is required")
-    .isLength({ min: 8, max: 32 })
-    .withMessage("Password must be between 8 to 32 chars"),
-  body("confirmPassword")
-    .not()
-    .isEmpty()
-    .withMessage("Confirm your password")
-    .isLength({ min: 8, max: 32 })
-    .withMessage("Confirm password must be between 8 to 32 chars")
-    .custom(async (confirmPassword, { req }) => {
-      if (req.body.password !== confirmPassword) {
-        throw new Error("Password didn't match!");
-      }
-
+      if (!findUser) throw new Error("User doesn't already exists!");
+      req.body.findUserRole = findUser?.role;
       return true;
     }),
 ];
