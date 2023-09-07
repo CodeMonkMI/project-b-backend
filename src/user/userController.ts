@@ -115,7 +115,11 @@ export const single = async (req: Request<CreateParams>, res: Response) => {
         },
       },
     });
-    return res.status(200).json(userData);
+    return res.status(200).json({
+      isSuccess: true,
+      message: "User created Successfully!",
+      data: userData,
+    });
   } catch (error) {
     internalServerError(res, error);
   }
