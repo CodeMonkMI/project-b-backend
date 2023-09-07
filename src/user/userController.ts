@@ -120,7 +120,27 @@ export const single = async (req: Request<CreateParams>, res: Response) => {
     internalServerError(res, error);
   }
 };
-export const remove = async (req: Request, res: Response) => {};
+interface RemoveParams {
+  username: string;
+}
+export const remove = async (req: Request<RemoveParams>, res: Response) => {
+  try {
+    const { username } = req.params;
+    await prisma.user.updateMany({
+      where: {
+        OR: [{ username }, { email: username }],
+      },
+      data: { isDelete: true },
+    });
+    return res.status(200).json({
+      isSuccess: true,
+      message: "User deleted successfully!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
 export const removeConfirm = async (req: Request, res: Response) => {};
 export const promote = async (req: Request, res: Response) => {};
 export const demote = async (req: Request, res: Response) => {};
