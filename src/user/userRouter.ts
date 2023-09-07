@@ -11,7 +11,7 @@ import {
   single,
   update,
 } from "./userController";
-import { createNewValidator } from "./userValidator";
+import { createNewValidator, promoteDemoteValidator } from "./userValidator";
 
 const authRouter: Router = express.Router();
 authRouter.get("/", authenticate, all);
@@ -20,7 +20,7 @@ authRouter.get("/:username", single);
 authRouter.patch("/:id", update);
 authRouter.delete("/remove/:username", remove);
 authRouter.delete("/remove/:username/confirm", removeConfirm);
-authRouter.post("/promote", promote);
-authRouter.post("/demote", demote);
+authRouter.post("/promote", promoteDemoteValidator, promote);
+authRouter.post("/demote", promoteDemoteValidator, demote);
 
 export default authRouter;

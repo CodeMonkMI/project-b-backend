@@ -40,7 +40,7 @@ export const createNewValidator = [
     }),
 ];
 
-export const promoteValidator = [
+export const promoteDemoteValidator = [
   body("username")
     .not()
     .isEmpty()

@@ -2,7 +2,7 @@ import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
-import { nextRoleName, randomPassword } from "./userHelpers";
+import { nextRoleName, prevRoleName, randomPassword } from "./userHelpers";
 const { JWT_SECRET } = process.env;
 const prisma = new PrismaClient();
 
@@ -139,7 +139,7 @@ export const remove = async (req: Request<RemoveParams>, res: Response) => {
 
     // send mail to super admin
 
-    return res.status(200).json({
+    return res.status(204).json({
       isSuccess: true,
       message: "User delete request sended!",
       data: null,
@@ -157,7 +157,7 @@ export const removeConfirm = async (req: Request, res: Response) => {
       },
       data: { deleteAt: new Date(Date.now()) },
     });
-    return res.status(200).json({
+    return res.status(204).json({
       isSuccess: true,
       message: "User deleted successfully!",
       data: null,
@@ -191,11 +191,34 @@ export const promote = async (
 
     return res.status(200).json({
       isSuccess: true,
-      message: "User delete request sended!",
+      message: "User promoted successfully",
       data: null,
     });
   } catch (error) {
     internalServerError(res, error);
   }
 };
-export const demote = async (req: Request, res: Response) => {};
+export const demote = async (req: Request, res: Response) => {
+  try {
+    const { findUserRole, username } = req.body;
+    const roleText = prevRoleName(findUserRole.role);
+    const findRole = await prisma.role.findFirst({ where: { role: roleText } });
+
+    await prisma.user.updateMany({
+      where: {
+        OR: [{ username }, { email: username }],
+      },
+      data: { roleId: findRole?.id },
+    });
+
+    // send mail to super admin and the user
+
+    return res.status(200).json({
+      isSuccess: true,
+      message: "User demoted successfully",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};

@@ -27,3 +27,8 @@ export const nextRoleName = (name: string) => {
   if (name === "admin") return "super_admin";
   return name;
 };
+export const prevRoleName = (name: string) => {
+  if (name === "super_admin") return "admin";
+  if (name === "admin") return "user";
+  return name;
+};
