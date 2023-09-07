@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
+import { randomPassword } from "./userHelpers";
 const { JWT_SECRET } = process.env;
 const prisma = new PrismaClient();
 
@@ -34,7 +36,43 @@ export const all = async (
   }
 };
 
-export const create = async (req: Request, res: Response) => {};
+export const create = async (req: Request, res: Response) => {
+  const {
+    username,
+    email,
+    role,
+  }: {
+    username: string;
+    email: string;
+    role: string;
+  } = req.body;
+
+  const password = randomPassword(12);
+  const SALT_ROUND = process.env.SALT_ROUND;
+
+  const hash = bcrypt.hashSync(
+    password,
+    bcrypt.genSaltSync(SALT_ROUND ? parseInt(SALT_ROUND) : 10)
+  );
+
+  await prisma.user.create({
+    data: {
+      email,
+      username,
+      password: hash,
+      roleId: role,
+      isVerified: true,
+    },
+  });
+
+  // ? send password to email;
+
+  return res.status(200).json({
+    isSuccess: true,
+    message: "User created Successfully!",
+    data: null,
+  });
+};
 export const update = async (req: Request, res: Response) => {};
 export const single = async (req: Request, res: Response) => {};
 export const remove = async (req: Request, res: Response) => {};

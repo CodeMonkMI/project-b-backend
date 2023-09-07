@@ -1,48 +1,43 @@
 import { PrismaClient } from "@prisma/client";
 import { body } from "express-validator";
-import { BLOOD_GROUPS } from "./authHelpers";
 
 const prisma = new PrismaClient();
 
-const validator = {
-  nameValidator: [
-    body("name")
-      .not()
-      .isEmpty()
-      .withMessage("Please enter a name")
-      .isLength({ min: 4, max: 50 })
-      .withMessage("Please enter a name between 4 to 50 chars")
-      .trim(),
-  ],
-  passwordUpdateValidator: [
-    body("oldPassword").not().isEmpty().withMessage("Old password is required"),
-    body("newPassword")
-      .not()
-      .isEmpty()
-      .withMessage("New password is required")
-      .isLength({ min: 8, max: 32 })
-      .withMessage("Old password must be chars between 8 to 32"),
-    body("confirmPassword")
-      .not()
-      .isEmpty()
-      .withMessage("Confirm password is required")
-      .isLength({ min: 8, max: 32 })
-      .withMessage("Confirm password must be chars between 8 to 32")
-      .custom(async (confirmPassword, { req }) => {
-        const { newPassword } = req.body;
+export const createNewValidator = [
+  body("username")
+    .not()
+    .isEmpty()
+    .withMessage("Username is required!")
+    .custom(async (username) => {
+      const findUser = await prisma.user.findFirst({
+        where: { username },
+      });
+      if (findUser) throw new Error("Email is already exists!");
+      return true;
+    }),
+  body("email")
+    .not()
+    .isEmpty()
+    .withMessage("Email is required!")
+    .custom(async (email) => {
+      const findUser = await prisma.user.findFirst({
+        where: { email },
+      });
+      if (findUser) throw new Error("Email is already exists!");
+      return true;
+    }),
+  body("role")
+    .not()
+    .isEmpty()
+    .withMessage("Email is required!")
+    .custom(async (id) => {
+      const roleData = await prisma.role.findUnique({ where: { id } });
+      if (!roleData) {
+        throw new Error("Invalid role");
+      }
 
-        if (newPassword !== confirmPassword) {
-          throw new Error("Password didn't match!");
-        }
-
-        return true;
-      }),
-  ],
-};
-
-export const signInValidator = [
-  body("username").not().isEmpty().withMessage("Username is required!"),
-  body("password").not().isEmpty().withMessage("Password is required!"),
+      return true;
+    }),
 ];
 
 export const signUpValidator = [
@@ -92,10 +87,10 @@ export const signUpValidator = [
     .isEmpty()
     .withMessage("Blood Group is required!")
     .custom((blood, { req }) => {
-      if (BLOOD_GROUPS.includes(blood.toUpperCase())) {
-        req.blood = blood.toUpperCase();
-        return true;
-      }
+      // if (BLOOD_GROUPS.includes(blood.toUpperCase())) {
+      //   req.blood = blood.toUpperCase();
+      //   return true;
+      // }
       throw new Error("Invalid blood group");
     }),
   body("password")

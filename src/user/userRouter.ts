@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import { authenticate } from "../auth/authMiddleware";
+import { errorResponse } from "../helpers/errorResponses";
 import {
   all,
   create,
@@ -10,9 +11,11 @@ import {
   single,
   update,
 } from "./userController";
+import { createNewValidator } from "./userValidator";
+
 const authRouter: Router = express.Router();
 authRouter.get("/", authenticate, all);
-authRouter.post("/", create);
+authRouter.post("/", createNewValidator, errorResponse, create);
 authRouter.get("/:id", single);
 authRouter.patch("/:id", update);
 authRouter.delete("/remove/:id", remove);
