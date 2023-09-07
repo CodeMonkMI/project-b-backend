@@ -19,7 +19,7 @@ authRouter.post("/", createNewValidator, errorResponse, create);
 authRouter.get("/:username", single);
 authRouter.patch("/:id", update);
 authRouter.delete("/remove/:username", remove);
-authRouter.delete("/remove/:id/confirm", removeConfirm);
+authRouter.delete("/remove/:username/confirm", removeConfirm);
 authRouter.post("/promote", promote);
 authRouter.post("/demote", demote);
 

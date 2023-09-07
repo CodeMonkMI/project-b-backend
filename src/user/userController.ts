@@ -136,6 +136,27 @@ export const remove = async (req: Request<RemoveParams>, res: Response) => {
       },
       data: { isDelete: true },
     });
+
+    // send mail to super admin
+
+    return res.status(200).json({
+      isSuccess: true,
+      message: "User delete request sended!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+export const removeConfirm = async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
+    await prisma.user.updateMany({
+      where: {
+        OR: [{ username }, { email: username }],
+      },
+      data: { isDelete: true },
+    });
     return res.status(200).json({
       isSuccess: true,
       message: "User deleted successfully!",
@@ -145,6 +166,5 @@ export const remove = async (req: Request<RemoveParams>, res: Response) => {
     internalServerError(res, error);
   }
 };
-export const removeConfirm = async (req: Request, res: Response) => {};
 export const promote = async (req: Request, res: Response) => {};
 export const demote = async (req: Request, res: Response) => {};
