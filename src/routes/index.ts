@@ -1,10 +1,15 @@
 import { Express, Request, Response } from "express";
 import authRouter from "../auth/authRouter";
+import featuredRouter from "../featured/featuredRouter";
 
 const routeArrays = [
   {
     path: "/api/v1/auth",
     handler: authRouter,
+  },
+  {
+    path: "/api/v1/featured",
+    handler: featuredRouter,
   },
   {
     path: "/",
