@@ -46,7 +46,7 @@ export const authenticate = (
       });
     }
     // console.log(user);
-    req.user = user;
+    req.User = user;
     return next();
   })(req, res, next);
 };
