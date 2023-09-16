@@ -106,7 +106,7 @@ model Featured {
 }
 
 model DonationHistory {
-  id            String   @id @default(uuid()) @map("_id")
+  id            String    @id @default(uuid()) @map("_id")
   date          DateTime
   address       String?
   streetAddress String
@@ -115,13 +115,14 @@ model DonationHistory {
   phoneNo       String?
   reason        String
   userId        String
-  user          User     @relation("donationGivenBy", fields: [userId], references: [id])
+  user          User      @relation("donationGivenBy", fields: [userId], references: [id])
   requestedId   String?
-  request       User?    @relation("donationRequester", fields: [requestedId], references: [id])
+  request       User?     @relation("donationRequester", fields: [requestedId], references: [id])
   readBydId     String[]
-  readBy        User     @relation("donationReader", fields: [readBydId], references: [id])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  readBy        User      @relation("donationReader", fields: [readBydId], references: [id])
+  deleteAt      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 enum donation_status {
