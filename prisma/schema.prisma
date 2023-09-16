@@ -135,22 +135,22 @@ enum donation_status {
 
 model DonationRequested {
   id            String          @id @default(uuid()) @map("_id")
-  requestedById String
-  requestedBy   User            @relation(fields: [requestedById], references: [id], name: "requestedBy")
+  requestedById String?
+  requestedBy   User?           @relation(fields: [requestedById], references: [id], name: "requestedBy")
   firstName     String
   lastName      String
-  email         String
+  email         String?
   phone         String
   address       String
   date          DateTime
   blood         String
   reason        String
-  verifiedById  String
-  verifiedBy    User            @relation(fields: [verifiedById], references: [id], name: "verifiedBy")
+  verifiedById  String?
+  verifiedBy    User?           @relation(fields: [verifiedById], references: [id], name: "verifiedBy")
   status        donation_status
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  deleteAt      DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
 model Activity {
