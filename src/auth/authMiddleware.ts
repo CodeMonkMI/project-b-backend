@@ -99,3 +99,17 @@ export const isSuperAdmin = async (
 };
 
 export default authMiddleware;
+
+export const isAuthenticate = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  passport.authenticate("jwt", (err: any, user: any, info: any) => {
+    if (user) {
+      req.User = user;
+    }
+
+    return next();
+  })(req, res, next);
+};
