@@ -3,6 +3,7 @@ import { ExtractJwt, Strategy, StrategyOptions } from "passport-jwt";
 import { PrismaClient } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import passport from "passport";
+import { internalServerError } from "../helpers/errorResponses";
 
 const prisma = new PrismaClient();
 const opts: StrategyOptions = {
@@ -49,6 +50,52 @@ export const authenticate = (
     req.User = user;
     return next();
   })(req, res, next);
+};
+export const isAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userRoleId = req.User?.roleId;
+    const userData = await prisma.role.findUnique({
+      where: { id: userRoleId },
+      select: {
+        role: true,
+      },
+    });
+    if (userData?.role === "admin" || userData?.role === "super_admin") {
+      return next();
+    }
+    return res.status(401).json({
+      message: "You are not authorize to perform this action!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+export const isSuperAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userRoleId = req.User?.roleId;
+    const userData = await prisma.role.findUnique({
+      where: { id: userRoleId },
+      select: {
+        role: true,
+      },
+    });
+    if (userData?.role === "super_admin") return next();
+    return res.status(401).json({
+      message: "You are not authorize to perform this action!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
 };
 
 export default authMiddleware;
