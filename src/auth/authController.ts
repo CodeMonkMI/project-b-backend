@@ -1,8 +1,8 @@
 import { PrismaClient, blood_type } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
 import { internalServerError } from "../helpers/errorResponses";
+import { generateToken } from "./authHelpers";
 const { JWT_SECRET } = process.env;
 const prisma = new PrismaClient();
 
@@ -38,17 +38,7 @@ export const signIn = async (req: Request, res: Response) => {
 
     if (!isPasswordOk) return res.status(400).json(errorMessage);
 
-    const token = jwt.sign(
-      {
-        id: findUser.id,
-        email: findUser.email,
-        username: findUser.username,
-        role: findUser.role.role,
-        iat: new Date().getTime(),
-        exp: Date.now() + 1000 * 60 * 60,
-      },
-      JWT_SECRET ? JWT_SECRET : ""
-    );
+    const token = generateToken(findUser);
 
     return res.status(200).json({
       message: "Login was successful",
@@ -103,10 +93,30 @@ export const signUp = async (req: Request, res: Response) => {
       },
     });
 
+    const findUser = await prisma.user.findUnique({
+      where: { username },
+      select: {
+        email: true,
+        username: true,
+        password: true,
+        id: true,
+        role: {
+          select: {
+            name: true,
+            role: true,
+          },
+        },
+      },
+    });
+    let token = "";
+    if (findUser) {
+      token = generateToken(findUser);
+    }
+
     return res.status(200).json({
       isSuccess: true,
       message: "Registration Successful",
-      data: null,
+      data: { token },
     });
   } catch (error) {
     internalServerError(res, error);
