@@ -4,42 +4,6 @@ import { BLOOD_GROUPS } from "./authHelpers";
 
 const prisma = new PrismaClient();
 
-const validator = {
-  nameValidator: [
-    body("name")
-      .not()
-      .isEmpty()
-      .withMessage("Please enter a name")
-      .isLength({ min: 4, max: 50 })
-      .withMessage("Please enter a name between 4 to 50 chars")
-      .trim(),
-  ],
-  passwordUpdateValidator: [
-    body("oldPassword").not().isEmpty().withMessage("Old password is required"),
-    body("newPassword")
-      .not()
-      .isEmpty()
-      .withMessage("New password is required")
-      .isLength({ min: 8, max: 32 })
-      .withMessage("Old password must be chars between 8 to 32"),
-    body("confirmPassword")
-      .not()
-      .isEmpty()
-      .withMessage("Confirm password is required")
-      .isLength({ min: 8, max: 32 })
-      .withMessage("Confirm password must be chars between 8 to 32")
-      .custom(async (confirmPassword, { req }) => {
-        const { newPassword } = req.body;
-
-        if (newPassword !== confirmPassword) {
-          throw new Error("Password didn't match!");
-        }
-
-        return true;
-      }),
-  ],
-};
-
 export const signInValidator = [
   body("username").not().isEmpty().withMessage("Username is required!"),
   body("password").not().isEmpty().withMessage("Password is required!"),

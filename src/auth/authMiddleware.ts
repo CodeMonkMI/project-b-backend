@@ -47,7 +47,7 @@ export const authenticate = (
       });
     }
     // console.log(user);
-    req.User = user;
+    req.user = user;
     return next();
   })(req, res, next);
 };
@@ -57,7 +57,7 @@ export const isAdmin = async (
   next: NextFunction
 ) => {
   try {
-    const userRoleId = req.User?.roleId;
+    const userRoleId = (req as any).user?.roleId;
     const userData = await prisma.role.findUnique({
       where: { id: userRoleId },
       select: {
@@ -81,7 +81,7 @@ export const isSuperAdmin = async (
   next: NextFunction
 ) => {
   try {
-    const userRoleId = req.User?.roleId;
+    const userRoleId = (req as any).user?.roleId;
     const userData = await prisma.role.findUnique({
       where: { id: userRoleId },
       select: {
@@ -107,7 +107,7 @@ export const isAuthenticate = (
 ) => {
   passport.authenticate("jwt", (err: any, user: any, info: any) => {
     if (user) {
-      req.User = user;
+      req.user = user;
     }
 
     return next();
