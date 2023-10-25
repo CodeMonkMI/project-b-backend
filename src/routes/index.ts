@@ -3,11 +3,16 @@ import donationHistoryRouter from "../DonationHistory/donationHistoryRouter";
 import donationRequestRouter from "../DonationRequest/donationRequestRouter";
 import authRouter from "../auth/authRouter";
 import featuredRouter from "../featured/featuredRouter";
+import userRouter from "../user/userRouter";
 
 const routeArrays = [
   {
     path: "/api/v1/auth",
     handler: authRouter,
+  },
+  {
+    path: "/api/v1/user",
+    handler: userRouter,
   },
   {
     path: "/api/v1/featured",
