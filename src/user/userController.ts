@@ -14,6 +14,36 @@ interface SearchQuery {
   limit?: number;
 }
 
+const SELECT_USER = {
+  id: true,
+  username: true,
+  email: true,
+  createdAt: true,
+  Profile: {
+    select: {
+      firstName: true,
+      lastName: true,
+      displayName: true,
+      fatherName: true,
+      motherName: true,
+      address: true,
+      streetAddress: true,
+      upzila: true,
+      zila: true,
+      phoneNo: true,
+      lastDonation: true,
+      bloodGroup: true,
+      image: true,
+    },
+  },
+  role: {
+    select: {
+      name: true,
+      role: true,
+    },
+  },
+};
+
 export const all = async (
   req: Request<{}, {}, {}, SearchQuery>,
   res: Response
@@ -21,15 +51,13 @@ export const all = async (
   try {
     const { query } = req;
 
-    const users = prisma.user.findMany({
-      where: {
-        deleteAt: null,
-      },
+    const users = await prisma.user.findMany({
+      select: { ...SELECT_USER },
     });
 
     return res.status(200).json({
-      message: "Login was successful",
-      data: { users },
+      message: "Request was successful",
+      data: users,
     });
   } catch (error) {
     internalServerError(res, error);
@@ -87,32 +115,7 @@ export const single = async (req: Request<CreateParams>, res: Response) => {
         OR: [{ email: username }, { username }],
       },
       select: {
-        id: true,
-        username: true,
-        email: true,
-        Profile: {
-          select: {
-            firstName: true,
-            lastName: true,
-            displayName: true,
-            fatherName: true,
-            motherName: true,
-            address: true,
-            streetAddress: true,
-            upzila: true,
-            zila: true,
-            phoneNo: true,
-            lastDonation: true,
-            bloodGroup: true,
-            image: true,
-          },
-        },
-        role: {
-          select: {
-            name: true,
-            role: true,
-          },
-        },
+        ...SELECT_USER,
       },
     });
     return res.status(200).json({
