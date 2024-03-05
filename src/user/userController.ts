@@ -20,6 +20,7 @@ const SELECT_USER = {
   username: true,
   email: true,
   createdAt: true,
+
   Profile: {
     select: {
       firstName: true,
@@ -53,6 +54,9 @@ export const all = async (
     const { query } = req;
 
     const users = await prisma.user.findMany({
+      where: {
+        deleteAt: { isSet: false },
+      },
       select: { ...SELECT_USER },
     });
 
