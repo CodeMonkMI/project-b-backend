@@ -2,6 +2,7 @@ import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
+import generateUsername from "../helpers/generateUsername";
 import { nextRoleName, prevRoleName, randomPassword } from "./userHelpers";
 const { JWT_SECRET } = process.env;
 const prisma = new PrismaClient();
@@ -63,17 +64,60 @@ export const all = async (
     internalServerError(res, error);
   }
 };
+export const getRoles = async (req: Request, res: Response) => {
+  try {
+    const roles = await prisma.role.findMany({
+      select: { id: true, name: true, role: true },
+    });
+
+    return res.status(200).json({
+      message: "Request was successful",
+      data: roles,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
 
 export const create = async (req: Request, res: Response) => {
-  const {
-    username,
-    email,
-    role,
-  }: {
-    username: string;
-    email: string;
+  type bloodType =
+    | "A_POSITIVE"
+    | "A_NEGATIVE"
+    | "B_POSITIVE"
+    | "B_NEGATIVE"
+    | "AB_POSITIVE"
+    | "AB_NEGATIVE"
+    | "O_POSITIVE"
+    | "O_NEGATIVE";
+
+  interface CreateRequestBody {
+    phoneNo: string;
     role: string;
-  } = req.body;
+    blood: bloodType;
+    firstName: string;
+    lastName: string;
+    email: string;
+  }
+
+  const {
+    phoneNo,
+    role,
+    blood,
+    firstName,
+    lastName,
+    email,
+  }: CreateRequestBody = req.body;
+
+  let username = generateUsername(firstName + " " + lastName);
+  while (true) {
+    const data = await prisma.user.findFirst({
+      where: { username },
+    });
+    if (!data) {
+      break;
+    }
+    username = generateUsername(firstName);
+  }
 
   const password = randomPassword(12);
   const SALT_ROUND = process.env.SALT_ROUND;
@@ -83,22 +127,31 @@ export const create = async (req: Request, res: Response) => {
     bcrypt.genSaltSync(SALT_ROUND ? parseInt(SALT_ROUND) : 10)
   );
 
-  await prisma.user.create({
+  const response = await prisma.user.create({
     data: {
       email,
       username,
+      Profile: {
+        create: {
+          firstName,
+          lastName,
+          bloodGroup: blood,
+          phoneNo,
+        },
+      },
       password: hash,
       roleId: role,
       isVerified: true,
     },
+
+    select: { ...SELECT_USER },
   });
 
   // ? send password to email;
-
   return res.status(200).json({
     isSuccess: true,
     message: "User created Successfully!",
-    data: null,
+    data: response,
   });
 };
 export const update = async (req: Request, res: Response) => {};

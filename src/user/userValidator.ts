@@ -3,18 +3,29 @@ import { body } from "express-validator";
 
 const prisma = new PrismaClient();
 
+const BLOOD_GROUPS = {
+  A_POSITIVE: true,
+  A_NEGATIVE: true,
+  B_POSITIVE: true,
+  B_NEGATIVE: true,
+  AB_POSITIVE: true,
+  AB_NEGATIVE: true,
+  O_POSITIVE: true,
+  O_NEGATIVE: true,
+};
+type bloodType =
+  | "A_POSITIVE"
+  | "A_NEGATIVE"
+  | "B_POSITIVE"
+  | "B_NEGATIVE"
+  | "AB_POSITIVE"
+  | "AB_NEGATIVE"
+  | "O_POSITIVE"
+  | "O_NEGATIVE";
+
 export const createNewValidator = [
-  body("username")
-    .not()
-    .isEmpty()
-    .withMessage("Username is required!")
-    .custom(async (username) => {
-      const findUser = await prisma.user.findFirst({
-        where: { username },
-      });
-      if (findUser) throw new Error("Email is already exists!");
-      return true;
-    }),
+  body("firstName").not().isEmpty().withMessage("First Name is required!"),
+  body("lastName").not().isEmpty().withMessage("Last Name is required!"),
   body("email")
     .not()
     .isEmpty()
@@ -24,6 +35,14 @@ export const createNewValidator = [
         where: { email },
       });
       if (findUser) throw new Error("Email is already exists!");
+      return true;
+    }),
+  body("blood")
+    .not()
+    .isEmpty()
+    .withMessage("Blood group is required!")
+    .custom(async (blood: bloodType) => {
+      if (!BLOOD_GROUPS[blood]) throw new Error("Invalid blood group exists!");
       return true;
     }),
   body("role")

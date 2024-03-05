@@ -5,6 +5,7 @@ import {
   all,
   create,
   demote,
+  getRoles,
   promote,
   remove,
   removeConfirm,
@@ -15,9 +16,10 @@ import { createNewValidator, promoteDemoteValidator } from "./userValidator";
 
 const authRouter: Router = express.Router();
 authRouter.get("/", authenticate, all);
-authRouter.post("/", createNewValidator, errorResponse, create);
-authRouter.get("/:username", single);
-authRouter.patch("/:id", update);
+authRouter.get("/roles", getRoles);
+authRouter.post("/create", createNewValidator, errorResponse, create);
+authRouter.get("/single/:username", single);
+authRouter.patch("/single/:id", update);
 authRouter.delete("/remove/:username", remove);
 authRouter.delete("/remove/:username/confirm", removeConfirm);
 authRouter.post("/promote", promoteDemoteValidator, promote);
