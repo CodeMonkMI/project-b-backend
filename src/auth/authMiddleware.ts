@@ -76,7 +76,7 @@ export const isAdmin = async (
   }
 };
 export const isSuperAdmin = async (
-  req: Request,
+  req: Request<any>,
   res: Response,
   next: NextFunction
 ) => {

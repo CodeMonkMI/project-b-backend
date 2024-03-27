@@ -8,11 +8,7 @@ const { JWT_SECRET } = process.env;
 const prisma = new PrismaClient();
 
 interface SearchQuery {
-  nonVerified?: boolean;
-  isNew?: boolean;
-  isActive?: boolean;
-  isDonatable?: boolean;
-  limit?: number;
+  verified?: string;
 }
 
 const SELECT_USER = {
@@ -20,6 +16,7 @@ const SELECT_USER = {
   username: true,
   email: true,
   createdAt: true,
+  isVerified: true,
 
   Profile: {
     select: {
@@ -55,14 +52,19 @@ export const all = async (
 
     const users = await prisma.user.findMany({
       where: {
-        deleteAt: { isSet: false },
+        AND: [
+          {
+            OR: [{ deleteAt: { isSet: false } }, { deleteAt: null }],
+          },
+        ],
       },
       select: { ...SELECT_USER },
     });
-
+    console.log(users.length);
     return res.status(200).json({
       message: "Request was successful",
       data: users,
+      len: users.length,
     });
   } catch (error) {
     internalServerError(res, error);
@@ -159,6 +161,28 @@ export const create = async (req: Request, res: Response) => {
   });
 };
 export const update = async (req: Request, res: Response) => {};
+
+export const verify = async (req: Request<CreateParams>, res: Response) => {
+  const { username } = req.params;
+
+  try {
+    const userData = await prisma.user.update({
+      data: {
+        isVerified: true,
+      },
+      where: {
+        username,
+      },
+    });
+    return res.status(200).json({
+      isSuccess: true,
+      message: "User verified Successfully!",
+      data: userData,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
 
 interface CreateParams {
   username: string;

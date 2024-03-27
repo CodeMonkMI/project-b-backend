@@ -24,19 +24,6 @@ export const signUpValidator = [
     .isLength({ max: 50 })
     .withMessage("Full name must be less than 50 chars!")
     .trim(),
-
-  body("username")
-    .not()
-    .isEmpty()
-    .withMessage("Username is required!")
-    .custom(async (username) => {
-      const userData = await prisma.user.findUnique({
-        where: { username, isDelete: false },
-      });
-      console.log(userData);
-      if (userData) throw new Error("Username is already exists!");
-      return true;
-    }),
   body("email")
     .not()
     .isEmpty()

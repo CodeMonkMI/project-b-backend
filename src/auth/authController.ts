@@ -2,6 +2,7 @@ import { PrismaClient, blood_type } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
+import generateUsername from "../helpers/generateUsername";
 import { generateToken } from "./authHelpers";
 const { JWT_SECRET } = process.env;
 const prisma = new PrismaClient();
@@ -54,14 +55,13 @@ export const signUp = async (req: Request, res: Response) => {
     const {
       firstName,
       lastName,
-      username,
+
       email,
       blood,
       password,
     }: {
       firstName: any;
       lastName: any;
-      username: string;
       email: string;
       blood: blood_type;
       password: string;
@@ -77,6 +77,18 @@ export const signUp = async (req: Request, res: Response) => {
     const role = await prisma.role.findUnique({ where: { role: "user" } });
     if (!role)
       return res.status(500).json({ message: "Internal server error" });
+
+    let username = generateUsername(firstName + " " + lastName);
+    while (true) {
+      const data = await prisma.user.findFirst({
+        where: { username },
+      });
+      if (!data) {
+        break;
+      }
+      username = generateUsername(firstName);
+    }
+
     await prisma.user.create({
       data: {
         email,
