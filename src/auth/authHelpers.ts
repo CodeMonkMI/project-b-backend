@@ -17,9 +17,6 @@ interface TokenUserDataProps {
   id: string;
   email: string;
   username: string;
-  role: {
-    role: string;
-  };
 }
 
 export const generateToken = (user: TokenUserDataProps): string => {
@@ -28,7 +25,6 @@ export const generateToken = (user: TokenUserDataProps): string => {
       id: user.id,
       email: user.email,
       username: user.username,
-      role: user.role.role,
       iat: new Date().getTime(),
       exp: Date.now() + 1000 * 60 * 60,
     },

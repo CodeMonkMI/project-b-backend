@@ -4,13 +4,17 @@ import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
 import generateUsername from "../helpers/generateUsername";
 import { generateToken } from "./authHelpers";
-const { JWT_SECRET } = process.env;
+
 const prisma = new PrismaClient();
 
 export const signIn = async (req: Request, res: Response) => {
   try {
-    const { username, password }: { username: string; password: string } =
-      req.body;
+    interface RequestBodyTypes {
+      username: string;
+      password: string;
+    }
+
+    const { username, password }: RequestBodyTypes = req.body;
     const errorMessage = {
       username: "Username is incorrect!",
       password: "Password is incorrect!",
@@ -24,12 +28,7 @@ export const signIn = async (req: Request, res: Response) => {
         username: true,
         password: true,
         id: true,
-        role: {
-          select: {
-            name: true,
-            role: true,
-          },
-        },
+        isVerified: true,
       },
     });
 
@@ -38,6 +37,11 @@ export const signIn = async (req: Request, res: Response) => {
     const isPasswordOk = bcrypt.compareSync(password, findUser.password);
 
     if (!isPasswordOk) return res.status(400).json(errorMessage);
+    if (!findUser.isVerified)
+      return res.status(406).json({
+        message:
+          "You account is not yet activated! We will let you know when it activated!",
+      });
 
     const token = generateToken(findUser);
 
@@ -105,30 +109,10 @@ export const signUp = async (req: Request, res: Response) => {
       },
     });
 
-    const findUser = await prisma.user.findUnique({
-      where: { username },
-      select: {
-        email: true,
-        username: true,
-        password: true,
-        id: true,
-        role: {
-          select: {
-            name: true,
-            role: true,
-          },
-        },
-      },
-    });
-    let token = "";
-    if (findUser) {
-      token = generateToken(findUser);
-    }
-
     return res.status(200).json({
       isSuccess: true,
       message: "Registration Successful",
-      data: { token },
+      data: null,
     });
   } catch (error) {
     internalServerError(res, error);
@@ -139,7 +123,7 @@ export const recoverAccount = async (req: Request, res: Response) => {};
 export const updatePassword = async (req: Request, res: Response) => {};
 export const me = async (req: Request, res: Response) => {
   const user: any = req.user;
-  console.log(user.id);
+
   try {
     const userData = await prisma.user.findUnique({
       where: {
@@ -174,7 +158,15 @@ export const me = async (req: Request, res: Response) => {
         },
       },
     });
-    return res.status(200).json(userData);
+    if (!userData)
+      return res.status(404).json({
+        message: "Data not found!",
+        data: null,
+      });
+    return res.status(200).json({
+      message: "User found!",
+      data: userData,
+    });
   } catch (error) {
     internalServerError(res, error);
   }
