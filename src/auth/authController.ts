@@ -161,7 +161,7 @@ export const me = async (req: Request, res: Response) => {
     if (!userData)
       return res.status(404).json({
         message: "Data not found!",
-        data: null,
+        data: {},
       });
     return res.status(200).json({
       message: "User found!",
