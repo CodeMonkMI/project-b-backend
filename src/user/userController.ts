@@ -261,6 +261,7 @@ export const promote = async (
 ) => {
   try {
     const { findUserRole, username } = req.body;
+
     const roleText = nextRoleName(findUserRole.role);
     const findRole = await prisma.role.findFirst({ where: { role: roleText } });
 

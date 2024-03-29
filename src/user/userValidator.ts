@@ -73,6 +73,7 @@ export const promoteDemoteValidator = [
         },
       });
       if (!findUser) throw new Error("User doesn't already exists!");
+
       req.body.findUserRole = findUser?.role;
       return true;
     }),
