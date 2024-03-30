@@ -13,15 +13,38 @@ export const all = async (
   res: Response
 ) => {
   try {
-    const { status = "request", limit = 10 } = req.query;
     const data = await prisma.donationRequested.findMany({
       where: {
-        status,
+        OR: [{ deleteAt: { isSet: false } }, { deleteAt: null }],
       },
       orderBy: {
         createdAt: "desc",
       },
-      take: limit,
+      select: {
+        address: true,
+        blood: true,
+        createdAt: true,
+        date: true,
+        email: true,
+        firstName: true,
+        id: true,
+        lastName: true,
+        phone: true,
+        reason: true,
+        status: true,
+        updatedAt: true,
+        requestedBy: {
+          select: {
+            username: true,
+            Profile: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     return res.status(200).json({
@@ -60,6 +83,7 @@ export const create = async (
     reason,
     emailUserId = null,
   } = req.body;
+  const user: any = req.user;
   try {
     const item = await prisma.donationRequested.create({
       data: {
@@ -67,12 +91,12 @@ export const create = async (
         blood,
         date,
         email,
-        status: "request",
+        status: user ? "verified" : "request",
         firstName,
         lastName,
         phone,
         reason,
-        requestedById: emailUserId,
+        requestedById: user?.id || emailUserId || null,
       },
       select: {
         email: true,

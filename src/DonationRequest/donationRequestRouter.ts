@@ -1,5 +1,10 @@
 import express, { Router } from "express";
-import { authenticate } from "../auth/authMiddleware";
+import {
+  authenticate,
+  isAdmin,
+  isAuthenticate,
+  isSuperAdmin,
+} from "../auth/authMiddleware";
 import { errorResponse } from "../helpers/errorResponses";
 import {
   all,
@@ -11,22 +16,23 @@ import {
 import { createValidator, updateValidator } from "./donationRequestValidator";
 
 const donationRequestRouter: Router = express.Router();
-donationRequestRouter.get("/", authenticate, all);
+donationRequestRouter.use(authenticate);
+donationRequestRouter.get("/", all);
 donationRequestRouter.post(
   "/",
-  authenticate,
   createValidator,
   errorResponse,
+  isAuthenticate,
   create
 );
-donationRequestRouter.get("/:id", authenticate, single);
+donationRequestRouter.get("/:id", single);
 donationRequestRouter.patch(
   "/:id",
-  authenticate,
+  isAdmin,
   updateValidator,
   errorResponse,
   update
 );
-donationRequestRouter.delete("/:id", authenticate, remove);
+donationRequestRouter.delete("/:id", isSuperAdmin, remove);
 
 export default donationRequestRouter;
