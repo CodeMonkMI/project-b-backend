@@ -10,10 +10,14 @@ import {
   all,
   approve,
   create,
+  holdStatus,
+  nextStatus,
+  prevStatus,
   remove,
   single,
   update,
 } from "./donationRequestController";
+import { requestFinder } from "./donationRequestMiddleware";
 import { createValidator, updateValidator } from "./donationRequestValidator";
 
 const donationRequestRouter: Router = express.Router();
@@ -28,6 +32,19 @@ donationRequestRouter.post(
 );
 donationRequestRouter.get("/:id", single);
 donationRequestRouter.put("/approve/:id", isAdmin, approve);
+donationRequestRouter.put(
+  "/status/prev/:id",
+  isAdmin,
+  requestFinder,
+  prevStatus
+);
+donationRequestRouter.put(
+  "/status/next/:id",
+  isAdmin,
+  requestFinder,
+  nextStatus
+);
+donationRequestRouter.put("/status/hold/:id", isAdmin, holdStatus);
 donationRequestRouter.patch(
   "/:id",
   isAdmin,

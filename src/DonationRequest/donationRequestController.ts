@@ -207,6 +207,88 @@ export const approve = async (
     internalServerError(res, error);
   }
 };
+export const prevStatus = async (
+  req: Request<{ id: string }, {}, { request: { status: donation_status } }>,
+  res: Response
+) => {
+  let status = req.body.request.status;
+  if (status === "ready") {
+    status = "progress";
+  } else if (status === "progress" || status === "hold") {
+    status = "verified";
+  }
+
+  try {
+    await prisma.donationRequested.update({
+      where: {
+        id: req.params.id,
+      },
+      data: {
+        status,
+      },
+    });
+
+    return res.status(202).json({
+      message: "Donation status updated!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+export const nextStatus = async (
+  req: Request<{ id: string }, {}, { request: { status: donation_status } }>,
+  res: Response
+) => {
+  let status = req.body.request.status;
+  if (status === "verified") {
+    status = "progress";
+  } else if (status === "progress") {
+    status = "ready";
+  } else if (status === "hold") {
+    status = "verified";
+  }
+
+  try {
+    await prisma.donationRequested.update({
+      where: {
+        id: req.params.id,
+      },
+      data: {
+        status,
+      },
+    });
+
+    return res.status(202).json({
+      message: "Donation status updated!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+export const holdStatus = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response
+) => {
+  try {
+    await prisma.donationRequested.update({
+      where: {
+        id: req.params.id,
+      },
+      data: {
+        status: "hold",
+      },
+    });
+
+    return res.status(202).json({
+      message: "Donation status updated!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
 
 export const remove = async (req: Request<{ id: string }>, res: Response) => {
   try {
