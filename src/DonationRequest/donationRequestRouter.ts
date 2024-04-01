@@ -52,6 +52,7 @@ donationRequestRouter.patch(
   errorResponse,
   update
 );
+donationRequestRouter.put("/assign/:id", isAdmin, update);
 donationRequestRouter.delete("/:id", isSuperAdmin, remove);
 
 export default donationRequestRouter;

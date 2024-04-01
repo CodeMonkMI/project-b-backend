@@ -45,6 +45,7 @@ model User {
   DonationRequestedHistory DonationHistory[]   @relation("donationRequester")
   DonationReadingHistory   DonationHistory[]   @relation("donationReader")
   DonationRequested        DonationRequested[] @relation(name: "requestedBy")
+  DonationGiven            DonationRequested[] @relation(name: "donor")
   DonationVerified         DonationRequested[] @relation(name: "verifiedBy")
   NotificationCreated      Notification[]      @relation(name: "createdBy")
   recievedNotificationIds  String[]
@@ -139,6 +140,8 @@ model DonationRequested {
   id            String          @id @default(uuid()) @map("_id")
   requestedById String?
   requestedBy   User?           @relation(fields: [requestedById], references: [id], name: "requestedBy")
+  donorId       String?
+  donor         User?           @relation(fields: [donorId], references: [id], name: "donor")
   firstName     String
   lastName      String
   email         String?
