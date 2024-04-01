@@ -8,6 +8,7 @@ import {
 import { errorResponse } from "../helpers/errorResponses";
 import {
   all,
+  approve,
   create,
   remove,
   single,
@@ -26,6 +27,7 @@ donationRequestRouter.post(
   create
 );
 donationRequestRouter.get("/:id", single);
+donationRequestRouter.put("/approve/:id", isAdmin, approve);
 donationRequestRouter.patch(
   "/:id",
   isAdmin,

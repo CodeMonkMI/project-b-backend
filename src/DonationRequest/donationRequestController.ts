@@ -185,6 +185,28 @@ export const update = async (
     internalServerError(res, error);
   }
 };
+export const approve = async (
+  req: Request<{ id: string }, {}, UpdateReqBody>,
+  res: Response
+) => {
+  try {
+    await prisma.donationRequested.update({
+      where: {
+        id: req.params.id,
+      },
+      data: {
+        status: "verified",
+      },
+    });
+
+    return res.status(202).json({
+      message: "Donation request approved!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
 
 export const remove = async (req: Request<{ id: string }>, res: Response) => {
   try {
