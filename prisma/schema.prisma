@@ -132,6 +132,7 @@ enum donation_status {
   ready
   hold
   completed
+  assigned
 }
 
 model DonationRequested {
