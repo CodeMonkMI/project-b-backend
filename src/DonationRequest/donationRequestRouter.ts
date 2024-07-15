@@ -9,16 +9,20 @@ import { errorResponse } from "../helpers/errorResponses";
 import {
   all,
   approve,
+  assign,
   create,
-  holdStatus,
-  nextStatus,
-  prevStatus,
+  decline,
+  findDonor,
+  hold,
+  progress,
   remove,
   single,
-  update,
 } from "./donationRequestController";
-import { requestFinder } from "./donationRequestMiddleware";
-import { createValidator, updateValidator } from "./donationRequestValidator";
+import {
+  assignValidator,
+  createValidator,
+  donorFinderValidator,
+} from "./donationRequestValidator";
 
 const donationRequestRouter: Router = express.Router();
 donationRequestRouter.use(authenticate);
@@ -32,27 +36,24 @@ donationRequestRouter.post(
 );
 donationRequestRouter.get("/:id", single);
 donationRequestRouter.put("/approve/:id", isAdmin, approve);
+donationRequestRouter.put("/decline/:id", isAdmin, decline);
+donationRequestRouter.put("/progress/:id", isAdmin, progress);
+
+donationRequestRouter.put("/hold/:id", isAdmin, hold);
 donationRequestRouter.put(
-  "/status/prev/:id",
+  "/assign/:id",
   isAdmin,
-  requestFinder,
-  prevStatus
-);
-donationRequestRouter.put(
-  "/status/next/:id",
-  isAdmin,
-  requestFinder,
-  nextStatus
-);
-donationRequestRouter.put("/status/hold/:id", isAdmin, holdStatus);
-donationRequestRouter.patch(
-  "/:id",
-  isAdmin,
-  updateValidator,
+  assignValidator,
   errorResponse,
-  update
+  assign
 );
-donationRequestRouter.put("/assign/:id", isAdmin, update);
 donationRequestRouter.delete("/:id", isSuperAdmin, remove);
+donationRequestRouter.post(
+  "/find-donor",
+  isAdmin,
+  donorFinderValidator,
+  errorResponse,
+  findDonor
+);
 
 export default donationRequestRouter;

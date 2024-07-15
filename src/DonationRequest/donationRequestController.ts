@@ -1,4 +1,5 @@
 import { PrismaClient, blood_type, donation_status } from "@prisma/client";
+import dns from "date-fns";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
 
@@ -44,6 +45,7 @@ export const all = async (
             },
           },
         },
+        donor: true,
       },
     });
 
@@ -91,7 +93,7 @@ export const create = async (
         blood,
         date,
         email,
-        status: user ? "verified" : "request",
+        status: user ? "progress" : "request",
         firstName,
         lastName,
         phone,
@@ -134,59 +136,8 @@ export const single = async (req: Request<{ id: string }>, res: Response) => {
   }
 };
 
-interface UpdateReqBody {
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phone: string;
-  address: string;
-  date: string;
-  blood: blood_type;
-  reason: string;
-}
-
-export const update = async (
-  req: Request<{ id: string }, {}, UpdateReqBody>,
-  res: Response
-) => {
-  const {
-    firstName,
-    lastName,
-    email = null,
-    phone,
-    address,
-    date,
-    blood,
-    reason,
-  } = req.body;
-  try {
-    const item = await prisma.donationRequested.update({
-      where: {
-        id: req.params.id,
-      },
-      data: {
-        address,
-        blood,
-        date,
-        email,
-        status: "request",
-        firstName,
-        lastName,
-        phone,
-        reason,
-      },
-    });
-
-    return res.status(201).json({
-      message: "Donation request updated!",
-      data: item,
-    });
-  } catch (error) {
-    internalServerError(res, error);
-  }
-};
 export const approve = async (
-  req: Request<{ id: string }, {}, UpdateReqBody>,
+  req: Request<{ id: string }, {}, AssignReqBody>,
   res: Response
 ) => {
   try {
@@ -195,7 +146,7 @@ export const approve = async (
         id: req.params.id,
       },
       data: {
-        status: "verified",
+        status: "progress",
       },
     });
 
@@ -207,24 +158,40 @@ export const approve = async (
     internalServerError(res, error);
   }
 };
-export const prevStatus = async (
-  req: Request<{ id: string }, {}, { request: { status: donation_status } }>,
+export const decline = async (
+  req: Request<{ id: string }, {}, {}>,
   res: Response
 ) => {
-  let status = req.body.request.status;
-  if (status === "ready") {
-    status = "progress";
-  } else if (status === "progress" || status === "hold") {
-    status = "verified";
-  }
-
   try {
     await prisma.donationRequested.update({
       where: {
         id: req.params.id,
       },
       data: {
-        status,
+        status: "declined",
+      },
+    });
+
+    return res.status(202).json({
+      message: "Donation request approved!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+export const progress = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response
+) => {
+  try {
+    await prisma.donationRequested.update({
+      where: {
+        id: req.params.id,
+      },
+      data: {
+        status: "progress",
+        donorId: null,
       },
     });
 
@@ -236,38 +203,45 @@ export const prevStatus = async (
     internalServerError(res, error);
   }
 };
-export const nextStatus = async (
-  req: Request<{ id: string }, {}, { request: { status: donation_status } }>,
+
+interface AssignReqBody {
+  donor: string;
+}
+
+export const assign = async (
+  req: Request<{ id: string }, {}, AssignReqBody>,
   res: Response
 ) => {
-  let status = req.body.request.status;
-  if (status === "verified") {
-    status = "progress";
-  } else if (status === "progress") {
-    status = "ready";
-  } else if (status === "hold") {
-    status = "verified";
-  }
-
+  const { donor } = req.body;
+  const id = req.params.id;
   try {
-    await prisma.donationRequested.update({
+    const findRequest = await prisma.donationRequested.findFirst({
       where: {
-        id: req.params.id,
+        AND: [{ id }, { OR: [{ status: "progress" }, { status: "ready" }] }],
       },
-      data: {
-        status,
-      },
+    });
+    if (!findRequest) {
+      return res.status(404).json({
+        message: "Request not found!",
+        data: null,
+      });
+    }
+
+    await prisma.donationRequested.update({
+      where: { id },
+      data: { donorId: donor, status: "ready" },
     });
 
     return res.status(202).json({
-      message: "Donation status updated!",
+      message: "Donation request updated!",
       data: null,
     });
   } catch (error) {
     internalServerError(res, error);
   }
 };
-export const holdStatus = async (
+
+export const hold = async (
   req: Request<{ id: string }, {}, {}>,
   res: Response
 ) => {
@@ -301,6 +275,62 @@ export const remove = async (req: Request<{ id: string }>, res: Response) => {
     return res.status(204).json({
       message: "Featured Item deleted successfully!",
       data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+
+interface FindReqBody {
+  blood: blood_type;
+  date: string;
+}
+
+export const findDonor = async (
+  req: Request<{}, {}, FindReqBody>,
+  res: Response
+) => {
+  const { date, blood } = req.body;
+  const mutedData = dns.subMonths(new Date(date), 5);
+
+  try {
+    const donationRequests = await prisma.user.findMany({
+      where: {
+        OR: [
+          {
+            AND: [
+              {
+                Profile: {
+                  bloodGroup: {
+                    equals: blood,
+                  },
+                  lastDonation: {
+                    gte: mutedData,
+                  },
+                },
+              },
+            ],
+          },
+          {
+            DonationRequested: {
+              every: {
+                OR: [
+                  {
+                    status: "completed",
+                  },
+                  { donor: null },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    return res.status(201).json({
+      message:
+        "You request accepted! We will let you know via email or call you directly!",
+      data: donationRequests,
     });
   } catch (error) {
     internalServerError(res, error);
