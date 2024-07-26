@@ -1,5 +1,4 @@
 import { PrismaClient, blood_type, donation_status } from "@prisma/client";
-import dns from "date-fns";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
 
@@ -291,43 +290,41 @@ export const findDonor = async (
   res: Response
 ) => {
   const { date, blood } = req.body;
-  const mutedData = dns.subMonths(new Date(date), 5);
-
+  const { BLOOD_DONATION_BREAK = 5 }: any = process.env;
+  const fiveMonthsAgo = new Date();
+  fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - BLOOD_DONATION_BREAK);
+  console.log(fiveMonthsAgo);
   try {
     const donationRequests = await prisma.user.findMany({
       where: {
-        OR: [
-          {
-            AND: [
-              {
-                Profile: {
-                  bloodGroup: {
-                    equals: blood,
-                  },
-                  lastDonation: {
-                    gte: mutedData,
-                  },
-                },
-              },
-            ],
+        Profile: {
+          bloodGroup: blood,
+          OR: [
+            { lastDonation: { isSet: false } },
+            { lastDonation: { lte: fiveMonthsAgo } },
+          ],
+        },
+        DonationRequested: {
+          none: {
+            status: "ready",
           },
-          {
-            DonationRequested: {
-              every: {
-                OR: [
-                  {
-                    status: "completed",
-                  },
-                  { donor: null },
-                ],
-              },
-            },
+        },
+      },
+      select: {
+        username: true,
+        email: true,
+        Profile: {
+          select: {
+            lastDonation: true,
+            bloodGroup: true,
+            firstName: true,
+            lastName: true,
           },
-        ],
+        },
       },
     });
 
-    return res.status(201).json({
+    return res.status(200).json({
       message:
         "You request accepted! We will let you know via email or call you directly!",
       data: donationRequests,

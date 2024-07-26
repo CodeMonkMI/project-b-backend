@@ -24,6 +24,8 @@ import {
   donorFinderValidator,
 } from "./donationRequestValidator";
 
+// base router url => /api/v1/donation/requested
+
 const donationRequestRouter: Router = express.Router();
 donationRequestRouter.use(authenticate);
 donationRequestRouter.get("/", all);
