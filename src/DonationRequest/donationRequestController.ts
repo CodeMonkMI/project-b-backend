@@ -297,6 +297,8 @@ export const findDonor = async (
   try {
     const donationRequests = await prisma.user.findMany({
       where: {
+        isVerified: true,
+        OR: [{ deleteAt: { isSet: false } }, { deleteAt: null }],
         Profile: {
           bloodGroup: blood,
           OR: [
@@ -311,14 +313,18 @@ export const findDonor = async (
         },
       },
       select: {
+        id: true,
         username: true,
-        email: true,
         Profile: {
           select: {
-            lastDonation: true,
             bloodGroup: true,
+            address: true,
+            zila: true,
+            upzila: true,
+            displayName: true,
             firstName: true,
             lastName: true,
+            phoneNo: true,
           },
         },
       },
