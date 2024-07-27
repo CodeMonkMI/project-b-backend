@@ -201,7 +201,7 @@ export const single = async (req: Request<CreateParams>, res: Response) => {
     });
     return res.status(200).json({
       isSuccess: true,
-      message: "User created Successfully!",
+      message: "User founded Successfully!",
       data: userData,
     });
   } catch (error) {

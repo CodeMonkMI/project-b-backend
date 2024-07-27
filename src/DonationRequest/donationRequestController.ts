@@ -44,7 +44,18 @@ export const all = async (
             },
           },
         },
-        donor: true,
+        donor: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            Profile: {
+              select: {
+                phoneNo: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -120,9 +131,47 @@ export const create = async (
 export const single = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
-    const single = await prisma.donationHistory.findUnique({
+    console.log(id);
+    const single = await prisma.donationRequested.findUnique({
       where: {
         id,
+      },
+      select: {
+        address: true,
+        blood: true,
+        createdAt: true,
+        date: true,
+        email: true,
+        firstName: true,
+        id: true,
+        lastName: true,
+        phone: true,
+        reason: true,
+        status: true,
+        updatedAt: true,
+        requestedBy: {
+          select: {
+            username: true,
+            Profile: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        donor: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            Profile: {
+              select: {
+                phoneNo: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -184,9 +233,29 @@ export const progress = async (
   res: Response
 ) => {
   try {
+    const id = req.params.id;
+    const findRequest = await prisma.donationRequested.findFirst({
+      where: {
+        id,
+      },
+    });
+    // disconnect previously connected donor if exist
+    if (findRequest?.donorId) {
+      await prisma.user.update({
+        where: { id: findRequest.donorId },
+        data: {
+          DonationGiven: {
+            disconnect: {
+              id,
+              status: "ready",
+            },
+          },
+        },
+      });
+    }
     await prisma.donationRequested.update({
       where: {
-        id: req.params.id,
+        id,
       },
       data: {
         status: "progress",
@@ -226,14 +295,59 @@ export const assign = async (
       });
     }
 
+    // disconnect previously connected donor if exist
+    if (findRequest.donorId) {
+      await prisma.user.update({
+        where: { id: findRequest.donorId },
+        data: {
+          DonationGiven: {
+            disconnect: {
+              id,
+              status: "ready",
+            },
+          },
+        },
+      });
+    }
+
     await prisma.donationRequested.update({
       where: { id },
       data: { donorId: donor, status: "ready" },
     });
 
-    return res.status(202).json({
-      message: "Donation request updated!",
-      data: null,
+    // update user
+    await prisma.user.update({
+      where: {
+        id: donor,
+      },
+      data: {
+        DonationGiven: {
+          connect: {
+            id,
+          },
+        },
+      },
+    });
+
+    const donorData = await prisma.user.findUnique({
+      where: {
+        id: donor,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        Profile: {
+          select: {
+            phoneNo: true,
+          },
+        },
+      },
+    });
+    console.log(donorData);
+    return res.status(200).json({
+      message: "Donor assigned successfully",
+      data: donorData,
     });
   } catch (error) {
     internalServerError(res, error);
@@ -245,12 +359,34 @@ export const hold = async (
   res: Response
 ) => {
   try {
+    const id = req.params.id;
+    const findRequest = await prisma.donationRequested.findFirst({
+      where: {
+        id,
+      },
+    });
+    // disconnect previously connected donor if exist
+    if (findRequest?.donorId) {
+      await prisma.user.update({
+        where: { id: findRequest.donorId },
+        data: {
+          DonationGiven: {
+            disconnect: {
+              id,
+              status: "ready",
+            },
+          },
+        },
+      });
+    }
+
     await prisma.donationRequested.update({
       where: {
         id: req.params.id,
       },
       data: {
         status: "hold",
+        donorId: null,
       },
     });
 
@@ -291,9 +427,9 @@ export const findDonor = async (
 ) => {
   const { date, blood } = req.body;
   const { BLOOD_DONATION_BREAK = 5 }: any = process.env;
-  const fiveMonthsAgo = new Date();
+  const fiveMonthsAgo = new Date(date);
   fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - BLOOD_DONATION_BREAK);
-  console.log(fiveMonthsAgo);
+
   try {
     const donationRequests = await prisma.user.findMany({
       where: {
@@ -306,7 +442,7 @@ export const findDonor = async (
             { lastDonation: { lte: fiveMonthsAgo } },
           ],
         },
-        DonationRequested: {
+        DonationGiven: {
           none: {
             status: "ready",
           },
