@@ -19,6 +19,26 @@ const authMiddleware = (passport: any) => {
           where: {
             id: payload.id,
           },
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            isVerified: true,
+            isDelete: false,
+            roleId: true,
+            role: {
+              select: {
+                name: true,
+                role: true,
+              },
+            },
+            Profile: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
         });
         if (!user) return done(null, false);
         return done(null, user);
@@ -46,7 +66,6 @@ export const authenticate = (
         message: "Authentication failed!",
       });
     }
-    // console.log(user);
     req.user = user;
     return next();
   })(req, res, next);
@@ -57,14 +76,10 @@ export const isAdmin = async (
   next: NextFunction
 ) => {
   try {
-    const userRoleId = (req as any).user?.roleId;
-    const userData = await prisma.role.findUnique({
-      where: { id: userRoleId },
-      select: {
-        role: true,
-      },
-    });
-    if (userData?.role === "admin" || userData?.role === "super_admin") {
+    if (
+      (req as any).user?.role.role === "admin" ||
+      (req as any).user?.role.role === "super_admin"
+    ) {
       return next();
     }
     return res.status(401).json({
@@ -81,14 +96,7 @@ export const isSuperAdmin = async (
   next: NextFunction
 ) => {
   try {
-    const userRoleId = (req as any).user?.roleId;
-    const userData = await prisma.role.findUnique({
-      where: { id: userRoleId },
-      select: {
-        role: true,
-      },
-    });
-    if (userData?.role === "super_admin") return next();
+    if ((req as any).user?.role.role === "super_admin") return next();
     return res.status(401).json({
       message: "You are not authorize to perform this action!",
       data: null,

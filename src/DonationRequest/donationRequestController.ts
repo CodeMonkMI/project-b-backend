@@ -1,8 +1,52 @@
 import { PrismaClient, blood_type, donation_status } from "@prisma/client";
 import { Request, Response } from "express";
+import {
+  createActivity,
+  generateDonationActivityMessage,
+} from "../DonationActivity/donationActivityFunction";
 import { internalServerError } from "../helpers/errorResponses";
 
 const prisma = new PrismaClient();
+
+const SELECT_REQUEST = {
+  address: true,
+  blood: true,
+  createdAt: true,
+  date: true,
+  email: true,
+  firstName: true,
+  id: true,
+  lastName: true,
+  phone: true,
+  reason: true,
+  status: true,
+  updatedAt: true,
+  requestedBy: {
+    select: {
+      username: true,
+      Profile: {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      },
+    },
+  },
+  donor: {
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      Profile: {
+        select: {
+          phoneNo: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
+    },
+  },
+};
 
 interface AllReqQuery {
   status?: donation_status;
@@ -21,41 +65,7 @@ export const all = async (
         createdAt: "desc",
       },
       select: {
-        address: true,
-        blood: true,
-        createdAt: true,
-        date: true,
-        email: true,
-        firstName: true,
-        id: true,
-        lastName: true,
-        phone: true,
-        reason: true,
-        status: true,
-        updatedAt: true,
-        requestedBy: {
-          select: {
-            username: true,
-            Profile: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        },
-        donor: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
-            Profile: {
-              select: {
-                phoneNo: true,
-              },
-            },
-          },
-        },
+        ...SELECT_REQUEST,
       },
     });
 
@@ -111,12 +121,28 @@ export const create = async (
         requestedById: user?.id || emailUserId || null,
       },
       select: {
-        email: true,
-        phone: true,
-        firstName: true,
-        lastName: true,
+        ...SELECT_REQUEST,
       },
     });
+
+    await createActivity({
+      type: "request",
+      message: generateDonationActivityMessage.request(
+        `${firstName} ${lastName}`,
+        blood,
+        address
+      ),
+      userId: user?.id,
+      requestedId: item.id,
+    });
+    if (user) {
+      await createActivity({
+        type: "approve",
+        message: `A request was automatically approved for ${firstName} ${lastName} `,
+        userId: user?.id,
+        requestedId: item.id,
+      });
+    }
 
     return res.status(201).json({
       message:
@@ -189,15 +215,27 @@ export const approve = async (
   res: Response
 ) => {
   try {
-    await prisma.donationRequested.update({
+    const item = await prisma.donationRequested.update({
       where: {
         id: req.params.id,
       },
       data: {
         status: "progress",
       },
+      select: {
+        ...SELECT_REQUEST,
+      },
     });
-
+    const user: any = req.user;
+    await createActivity({
+      type: "approve",
+      message: generateDonationActivityMessage.approve(
+        `${user.Profile.firstName} ${user.Profile.lastName} (${user.username})`,
+        `${item.firstName} ${item.lastName}`
+      ),
+      userId: user?.id,
+      requestedId: item.id,
+    });
     return res.status(202).json({
       message: "Donation request approved!",
       data: null,
@@ -232,7 +270,7 @@ export const complete = async (
       });
     }
 
-    await prisma.donationRequested.update({
+    const item = await prisma.donationRequested.update({
       where: {
         id: req.params.id,
         status: "ready",
@@ -249,6 +287,20 @@ export const complete = async (
           },
         },
       },
+      select: { ...SELECT_REQUEST },
+    });
+
+    const user: any = req.user;
+    await createActivity({
+      type: "completed",
+      message: generateDonationActivityMessage.completed(
+        `${item.donor?.Profile?.firstName} ${item.donor?.Profile?.lastName}`,
+        `${item?.firstName} ${item?.lastName}`,
+        item.address,
+        `${user.Profile.firstName} ${user.Profile.lastName}(${user.username})`
+      ),
+      userId: user?.id,
+      requestedId: item.id,
     });
 
     return res.status(200).json({
@@ -265,13 +317,24 @@ export const decline = async (
   res: Response
 ) => {
   try {
+    const id = req.params.id;
     await prisma.donationRequested.update({
       where: {
-        id: req.params.id,
+        id,
       },
       data: {
         status: "declined",
       },
+    });
+
+    const user: any = req.user;
+    await createActivity({
+      type: "declined",
+      message: generateDonationActivityMessage.declined(
+        `${user.Profile.firstName} ${user.Profile.lastName}(${user.username})`
+      ),
+      userId: user?.id,
+      requestedId: id,
     });
 
     return res.status(202).json({
@@ -315,6 +378,16 @@ export const progress = async (
         status: "progress",
         donorId: null,
       },
+    });
+
+    const user: any = req.user;
+    await createActivity({
+      type: "progress",
+      message: generateDonationActivityMessage.progress(
+        `${user.Profile.firstName} ${user.Profile.lastName}(${user.username})`
+      ),
+      userId: user?.id,
+      requestedId: id,
     });
 
     return res.status(202).json({
@@ -364,9 +437,10 @@ export const assign = async (
       });
     }
 
-    await prisma.donationRequested.update({
+    const item = await prisma.donationRequested.update({
       where: { id },
       data: { donorId: donor, status: "ready" },
+      select: { ...SELECT_REQUEST },
     });
 
     // update user
@@ -398,6 +472,19 @@ export const assign = async (
         },
       },
     });
+
+    const user: any = req.user;
+    await createActivity({
+      type: "ready",
+      message: generateDonationActivityMessage.ready(
+        `${item.donor?.Profile?.firstName} ${item.donor?.Profile?.lastName}`,
+        `${item.firstName} ${item.lastName}`,
+        `${user.Profile.firstName} ${user.Profile.lastName}(${user.username})`
+      ),
+      userId: user?.username,
+      requestedId: item.id,
+    });
+
     return res.status(200).json({
       message: "Donor assigned successfully",
       data: donorData,
@@ -443,6 +530,16 @@ export const hold = async (
       },
     });
 
+    const user: any = req.user;
+    await createActivity({
+      type: "hold",
+      message: generateDonationActivityMessage.hold(
+        `${user.Profile.firstName} ${user.Profile.lastName} (${user.username})`
+      ),
+      userId: user?.id,
+      requestedId: id,
+    });
+
     return res.status(202).json({
       message: "Donation status updated!",
       data: null,
@@ -459,7 +556,15 @@ export const remove = async (req: Request<{ id: string }>, res: Response) => {
       where: { id },
       data: { deleteAt: new Date() },
     });
-
+    const user: any = req.user;
+    await createActivity({
+      type: "deleted",
+      message: generateDonationActivityMessage.deleted(
+        `${user.Profile.firstName} ${user.Profile.lastName}(${user.username})`
+      ),
+      userId: user?.id,
+      requestedId: id,
+    });
     return res.status(204).json({
       message: "Featured Item deleted successfully!",
       data: null,

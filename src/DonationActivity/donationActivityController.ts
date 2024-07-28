@@ -4,20 +4,12 @@ import { internalServerError } from "../helpers/errorResponses";
 
 const prisma = new PrismaClient();
 
-interface AllReqQuery {
-  limit?: number;
-}
-export const all = async (
-  req: Request<{}, {}, {}, AllReqQuery>,
-  res: Response
-) => {
+export const all = async (req: Request, res: Response) => {
   try {
-    const { limit = 10 } = req.query;
-    const data = await prisma.donationHistory.findMany({
+    const data = await prisma.donationActivity.findMany({
       orderBy: {
         createdAt: "desc",
       },
-      take: limit,
     });
 
     return res.status(200).json({
@@ -32,7 +24,7 @@ export const all = async (
 export const single = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
-    const single = await prisma.donationHistory.findUnique({
+    const single = await prisma.donationActivity.findUnique({
       where: {
         id,
       },
@@ -49,7 +41,7 @@ export const single = async (req: Request<{ id: string }>, res: Response) => {
 
 export const remove = async (req: Request<{ id: string }>, res: Response) => {
   try {
-    await prisma.donationHistory.update({
+    await prisma.donationActivity.update({
       where: { id: req.params.id },
       data: { deleteAt: new Date() },
     });

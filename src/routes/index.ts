@@ -1,5 +1,5 @@
 import { Express, Request, Response } from "express";
-import donationHistoryRouter from "../DonationHistory/donationHistoryRouter";
+import donationActivityRouter from "../DonationActivity/donationActivityRouter";
 import donationRequestRouter from "../DonationRequest/donationRequestRouter";
 import authRouter from "../auth/authRouter";
 import featuredRouter from "../featured/featuredRouter";
@@ -23,8 +23,8 @@ const routeArrays = [
     handler: donationRequestRouter,
   },
   {
-    path: "/api/v1/donation/history",
-    handler: donationHistoryRouter,
+    path: "/api/v1/donation/activity",
+    handler: donationActivityRouter,
   },
   {
     path: "/",
