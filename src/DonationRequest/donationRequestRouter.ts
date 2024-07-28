@@ -10,6 +10,7 @@ import {
   all,
   approve,
   assign,
+  complete,
   create,
   decline,
   findDonor,
@@ -38,6 +39,7 @@ donationRequestRouter.post(
 );
 donationRequestRouter.get("/:id", single);
 donationRequestRouter.put("/approve/:id", isAdmin, approve);
+donationRequestRouter.put("/complete/:id", isAdmin, complete);
 donationRequestRouter.put("/decline/:id", isAdmin, decline);
 donationRequestRouter.put("/progress/:id", isAdmin, progress);
 

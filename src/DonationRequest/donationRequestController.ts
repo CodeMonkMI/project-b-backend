@@ -206,6 +206,60 @@ export const approve = async (
     internalServerError(res, error);
   }
 };
+interface CompleteReqBody {
+  donor: string;
+}
+export const complete = async (
+  req: Request<{ id: string }, {}, CompleteReqBody>,
+  res: Response
+) => {
+  try {
+    const donationRequest = await prisma.donationRequested.findFirst({
+      where: {
+        id: req.params.id,
+        status: "ready",
+        AND: [{ donorId: { isSet: true } }, { donorId: { not: null } }],
+      },
+      select: {
+        donorId: true,
+      },
+    });
+
+    if (!donationRequest || !donationRequest.donorId) {
+      return res.status(400).json({
+        message: "Invalid Request!",
+        data: donationRequest,
+      });
+    }
+
+    await prisma.donationRequested.update({
+      where: {
+        id: req.params.id,
+        status: "ready",
+      },
+      data: {
+        status: "completed",
+        donor: {
+          update: {
+            Profile: {
+              update: {
+                lastDonation: new Date(),
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      message: "Donation request completed!",
+      data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+
 export const decline = async (
   req: Request<{ id: string }, {}, {}>,
   res: Response
