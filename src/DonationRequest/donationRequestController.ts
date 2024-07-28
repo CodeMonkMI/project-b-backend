@@ -131,7 +131,7 @@ export const create = async (
 export const single = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
-    console.log(id);
+
     const single = await prisma.donationRequested.findUnique({
       where: {
         id,
@@ -344,7 +344,6 @@ export const assign = async (
         },
       },
     });
-    console.log(donorData);
     return res.status(200).json({
       message: "Donor assigned successfully",
       data: donorData,
