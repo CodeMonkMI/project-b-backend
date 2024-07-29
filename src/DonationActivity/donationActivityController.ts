@@ -10,7 +10,15 @@ export const all = async (req: Request, res: Response) => {
       orderBy: {
         createdAt: "desc",
       },
+      select: {
+        createdAt: true,
+        message: true,
+        type: true,
+        id: true,
+      },
     });
+
+    console.log();
 
     return res.status(200).json({
       message: "Request was successful!",
