@@ -70,11 +70,13 @@ export const promoteDemoteValidator = [
         where: { OR: [{ username }, { email: username }] },
         select: {
           role: true,
+          id: true,
         },
       });
       if (!findUser) throw new Error("User doesn't already exists!");
 
-      req.body.findUserRole = findUser?.role;
+      req.body.findUserRole = findUser.role;
+      req.body.findUserId = findUser.id;
       return true;
     }),
 ];

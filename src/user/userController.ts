@@ -254,24 +254,34 @@ export const removeConfirm = async (req: Request, res: Response) => {
 interface PromoteReqBody {
   username: string;
   findUserRole: Role;
+  findUserId: string;
 }
 export const promote = async (
   req: Request<{}, {}, PromoteReqBody>,
   res: Response
 ) => {
   try {
-    const { findUserRole, username } = req.body;
+    const { findUserRole, findUserId } = req.body;
 
     const roleText = nextRoleName(findUserRole.role);
     const findRole = await prisma.role.findFirst({ where: { role: roleText } });
 
-    await prisma.user.updateMany({
+    await prisma.user.update({
       where: {
-        OR: [{ username }, { email: username }],
+        id: findUserId,
       },
       data: { roleId: findRole?.id },
     });
 
+    const authUserId: any = (req?.user as any).id;
+
+    await prisma.notification.create({
+      data: {
+        message: `Your are being promoted! Now you are ${findRole?.name}`,
+        createdById: authUserId,
+        receiverId: [findUserId],
+      },
+    });
     // send mail to super admin and the user
 
     return res.status(200).json({
@@ -285,17 +295,26 @@ export const promote = async (
 };
 export const demote = async (req: Request, res: Response) => {
   try {
-    const { findUserRole, username } = req.body;
+    const { findUserRole, findUserId } = req.body;
     const roleText = prevRoleName(findUserRole.role);
     const findRole = await prisma.role.findFirst({ where: { role: roleText } });
 
-    await prisma.user.updateMany({
+    await prisma.user.update({
       where: {
-        OR: [{ username }, { email: username }],
+        id: findUserId,
       },
       data: { roleId: findRole?.id },
     });
 
+    const authUserId: any = (req?.user as any).id;
+
+    await prisma.notification.create({
+      data: {
+        message: `Your are being demoted! Now you are ${findRole?.name}`,
+        createdById: authUserId,
+        receiverId: [findUserId],
+      },
+    });
     // send mail to super admin and the user
 
     return res.status(200).json({

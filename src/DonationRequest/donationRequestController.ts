@@ -21,6 +21,7 @@ const SELECT_REQUEST = {
   reason: true,
   status: true,
   updatedAt: true,
+  requestedById: true,
   requestedBy: {
     select: {
       username: true,
@@ -28,6 +29,7 @@ const SELECT_REQUEST = {
         select: {
           firstName: true,
           lastName: true,
+          id: true,
         },
       },
     },
@@ -144,6 +146,38 @@ export const create = async (
       });
     }
 
+    // create notification
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          OR: [{ role: "admin" }, { role: "super_admin" }],
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const authUserId = (req.user as any).id;
+    await prisma.notification.createMany({
+      data: [
+        {
+          message: user
+            ? `${firstName} ${lastName} request a blood of ${blood} is approved automatically!`
+            : `${firstName} ${lastName} request a blood of ${blood}. Approval required!`,
+          createdById: authUserId,
+          receiverId: admins.map((i) => i.id),
+        },
+        {
+          message: user
+            ? `You request is approved! We will let you updated!`
+            : `We have received your request of ${blood} blood. We will let you updated!`,
+          createdById: authUserId,
+          receiverId: [authUserId],
+        },
+      ],
+    });
+
     return res.status(201).json({
       message:
         "You request accepted! We will let you know via email or call you directly!",
@@ -227,6 +261,7 @@ export const approve = async (
       },
     });
     const user: any = req.user;
+
     await createActivity({
       type: "approve",
       message: generateDonationActivityMessage.approve(
@@ -236,6 +271,18 @@ export const approve = async (
       userId: user?.id,
       requestedId: item.id,
     });
+
+    // create notification
+    await prisma.notification.createMany({
+      data: [
+        {
+          message: `${item.requestedBy?.Profile?.firstName} ${item.requestedBy?.Profile?.lastName} request (${item.id}) a blood of ${item.blood} is approved by an admin!`,
+          createdById: user.id,
+          receiverId: [user.id],
+        },
+      ],
+    });
+
     return res.status(202).json({
       message: "Donation request approved!",
       data: null,
@@ -303,6 +350,22 @@ export const complete = async (
       requestedId: item.id,
     });
 
+    // create notification
+    await prisma.notification.createMany({
+      data: [
+        {
+          message: `${item.requestedBy?.Profile?.firstName} ${item.requestedBy?.Profile?.lastName} request (${item.id}) a blood of ${item.blood} is completed now!`,
+          createdById: user.id,
+          receiverId: item.requestedBy?.Profile?.id == user.id ? [user.id] : [],
+        },
+        {
+          message: `You have successfully given a blood. You saved a life with you blood. Respect for you!`,
+          createdById: user.id,
+          receiverId: [item.donor?.id],
+        },
+      ],
+    });
+
     return res.status(200).json({
       message: "Donation request completed!",
       data: null,
@@ -318,12 +381,15 @@ export const decline = async (
 ) => {
   try {
     const id = req.params.id;
-    await prisma.donationRequested.update({
+    const item = await prisma.donationRequested.update({
       where: {
         id,
       },
       data: {
         status: "declined",
+      },
+      select: {
+        ...SELECT_REQUEST,
       },
     });
 
@@ -335,6 +401,17 @@ export const decline = async (
       ),
       userId: user?.id,
       requestedId: id,
+    });
+
+    // create notification
+    await prisma.notification.createMany({
+      data: [
+        {
+          message: `${item.requestedBy?.Profile?.firstName} ${item.requestedBy?.Profile?.lastName} request (${item.id}) a blood of ${item.blood} is declined by an admin!`,
+          createdById: user.id,
+          receiverId: item?.requestedById ? [item.requestedById] : [],
+        },
+      ],
     });
 
     return res.status(202).json({
@@ -370,13 +447,28 @@ export const progress = async (
         },
       });
     }
-    await prisma.donationRequested.update({
+    const item = await prisma.donationRequested.update({
       where: {
         id,
       },
       data: {
         status: "progress",
         donorId: null,
+      },
+      select: {
+        id: true,
+        blood: true,
+        requestedById: true,
+        requestedBy: {
+          select: {
+            Profile: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -388,6 +480,17 @@ export const progress = async (
       ),
       userId: user?.id,
       requestedId: id,
+    });
+
+    // create notification
+    await prisma.notification.createMany({
+      data: [
+        {
+          message: `${item.requestedBy?.Profile?.firstName} ${item.requestedBy?.Profile?.lastName} request (${item.id}) a blood of ${item.blood} is in progress!`,
+          createdById: user.id,
+          receiverId: item.requestedById ? [item.requestedById] : [],
+        },
+      ],
     });
 
     return res.status(202).json({
@@ -440,7 +543,7 @@ export const assign = async (
     const item = await prisma.donationRequested.update({
       where: { id },
       data: { donorId: donor, status: "ready" },
-      select: { ...SELECT_REQUEST },
+      select: { ...SELECT_REQUEST, donorId: true },
     });
 
     // update user
@@ -485,6 +588,22 @@ export const assign = async (
       requestedId: item.id,
     });
 
+    // create notification
+    await prisma.notification.createMany({
+      data: [
+        {
+          message: `${item.requestedBy?.Profile?.firstName} ${item.requestedBy?.Profile?.lastName}, a donor is ready to give blood for request (${item.id}) a blood of ${item.blood}`,
+          createdById: user.id,
+          receiverId: item.requestedById ? [item.requestedById] : [],
+        },
+        {
+          message: `You are being selected to give blood for ${item.requestedBy?.Profile?.firstName} ${item.requestedBy?.Profile?.lastName} request (${item.id})!`,
+          createdById: user.id,
+          receiverId: [donor],
+        },
+      ],
+    });
+
     return res.status(200).json({
       message: "Donor assigned successfully",
       data: donorData,
@@ -520,13 +639,16 @@ export const hold = async (
       });
     }
 
-    await prisma.donationRequested.update({
+    const item = await prisma.donationRequested.update({
       where: {
         id: req.params.id,
       },
       data: {
         status: "hold",
         donorId: null,
+      },
+      select: {
+        ...SELECT_REQUEST,
       },
     });
 
@@ -538,6 +660,17 @@ export const hold = async (
       ),
       userId: user?.id,
       requestedId: id,
+    });
+
+    // create notification
+    await prisma.notification.createMany({
+      data: [
+        {
+          message: `${item.requestedBy?.Profile?.firstName} ${item.requestedBy?.Profile?.lastName} request (${item.id}) a blood of ${item.blood} is in progress!`,
+          createdById: user.id,
+          receiverId: item.requestedById ? [item.requestedById] : [],
+        },
+      ],
     });
 
     return res.status(202).json({
@@ -552,9 +685,12 @@ export const hold = async (
 export const remove = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params;
-    await prisma.donationRequested.update({
+    const item = await prisma.donationRequested.update({
       where: { id },
       data: { deleteAt: new Date() },
+      select: {
+        ...SELECT_REQUEST,
+      },
     });
     const user: any = req.user;
     await createActivity({
@@ -564,6 +700,16 @@ export const remove = async (req: Request<{ id: string }>, res: Response) => {
       ),
       userId: user?.id,
       requestedId: id,
+    });
+    // create notification
+    await prisma.notification.createMany({
+      data: [
+        {
+          message: `${item.requestedBy?.Profile?.firstName} ${item.requestedBy?.Profile?.lastName} request (${item.id}) a blood of ${item.blood} is in progress!`,
+          createdById: user.id,
+          receiverId: item.requestedById ? [item.requestedById] : [],
+        },
+      ],
     });
     return res.status(204).json({
       message: "Featured Item deleted successfully!",
