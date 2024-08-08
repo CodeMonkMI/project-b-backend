@@ -1,4 +1,5 @@
 import { PrismaClient, blood_type, donation_status } from "@prisma/client";
+import { endOfMonth, startOfMonth } from "date-fns";
 import { Request, Response } from "express";
 import {
   createActivity,
@@ -775,6 +776,83 @@ export const findDonor = async (
         "You request accepted! We will let you know via email or call you directly!",
       data: donationRequests,
     });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+export const userContribution = async (
+  req: Request<{ username: string }, {}, FindReqBody>,
+  res: Response
+) => {
+  const username = req.params.username;
+
+  try {
+    // Get the start and end of the current month
+    const startOfCurrentMonth = startOfMonth(new Date());
+    const endOfCurrentMonth = endOfMonth(new Date());
+
+    // Count donations given by the user
+    const donationCount = await prisma.donationRequested.aggregate({
+      _count: true,
+      where: {
+        status: "completed",
+        donor: {
+          username,
+        },
+      },
+    });
+
+    const donationCountThisMonth = await prisma.donationRequested.aggregate({
+      _count: true,
+      where: {
+        status: "completed",
+        donor: {
+          username,
+        },
+        createdAt: {
+          gte: startOfCurrentMonth,
+          lte: endOfCurrentMonth,
+        },
+      },
+    });
+
+    // Count donation requests by the user
+    const requestCount = await prisma.donationRequested.aggregate({
+      _count: true,
+      where: {
+        requestedBy: {
+          username,
+        },
+      },
+    });
+
+    const requestCountThisMonth = await prisma.donationRequested.aggregate({
+      _count: true,
+      where: {
+        requestedBy: {
+          username,
+        },
+        createdAt: {
+          gte: startOfCurrentMonth,
+          lte: endOfCurrentMonth,
+        },
+      },
+    });
+
+    // Return the aggregated data
+    const data = {
+      donation: {
+        month: donationCountThisMonth._count,
+        total: donationCount._count,
+      },
+      ref: {
+        month: requestCountThisMonth._count,
+        total: requestCount._count,
+      },
+    };
+    return res
+      .status(200)
+      .json({ message: "Stats generated successfully", data });
   } catch (error) {
     internalServerError(res, error);
   }

@@ -18,6 +18,7 @@ import {
   progress,
   remove,
   single,
+  userContribution,
 } from "./donationRequestController";
 import {
   assignValidator,
@@ -59,5 +60,6 @@ donationRequestRouter.post(
   errorResponse,
   findDonor
 );
+donationRequestRouter.get("/contribution/:username", userContribution);
 
 export default donationRequestRouter;
