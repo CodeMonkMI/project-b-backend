@@ -20,11 +20,18 @@ export const all = async (req: Request, res: Response) => {
   try {
     const data = await prisma.notification.findMany({
       where: {
-        deleteAt: null,
+        OR: [{ deleteAt: { isSet: false } }, { deleteAt: null }],
+        receiverId: { has: (req.user as any).id },
       },
       orderBy: {
         createdAt: "desc",
       },
+      select: {
+        id: true,
+        message: true,
+        createdAt: true,
+      },
+      take: 9,
     });
 
     return res.status(200).json({
