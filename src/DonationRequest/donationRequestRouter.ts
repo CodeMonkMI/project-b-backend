@@ -60,6 +60,6 @@ donationRequestRouter.post(
   errorResponse,
   findDonor
 );
-donationRequestRouter.get("/contribution/:username", userContribution);
+donationRequestRouter.get("/contribution/:username", isAdmin, userContribution);
 
 export default donationRequestRouter;

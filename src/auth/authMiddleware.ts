@@ -76,10 +76,8 @@ export const isAdmin = async (
   next: NextFunction
 ) => {
   try {
-    if (
-      (req as any).user?.role.role === "admin" ||
-      (req as any).user?.role.role === "super_admin"
-    ) {
+    const role = (req as any).user?.role.role;
+    if (role === "admin" || role === "super_admin") {
       return next();
     }
     return res.status(401).json({
