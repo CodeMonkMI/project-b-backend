@@ -69,3 +69,45 @@ export const signUpValidator = [
       return true;
     }),
 ];
+
+export const updatePasswordValidator = [
+  body("password")
+    .not()
+    .isEmpty()
+    .withMessage("Current password is required!")
+    .isLength({ min: 8 })
+    .withMessage("Current password must be at least 8 chars"),
+  body("newPassword")
+    .not()
+    .isEmpty()
+    .withMessage("New password is required!")
+    .isLength({ min: 8, max: 32 })
+    .withMessage("New password must be between 8 and 32 chars"),
+  body("confirmPassword")
+    .not()
+    .isEmpty()
+    .withMessage("Confirm password is required!")
+    .custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        throw new Error("Passwords did not match");
+      }
+      return true;
+    }),
+];
+
+export const updateInfoValidator = [
+  body("email")
+    .not()
+    .isEmpty()
+    .withMessage("Email is required!")
+    .isEmail()
+    .withMessage("Email must be valid!")
+    .custom(async (email, { req }) => {
+      const userData = await prisma.user.findUnique({
+        where: { email, isDelete: false, NOT: { id: req.user.id } },
+      });
+      if (userData) throw new Error("Email is already exists!");
+      return true;
+    })
+    .normalizeEmail(),
+];

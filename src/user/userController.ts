@@ -1,4 +1,4 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { blood_type, PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
@@ -321,6 +321,95 @@ export const demote = async (req: Request, res: Response) => {
       isSuccess: true,
       message: "User demoted successfully",
       data: null,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const user: any = req.user; // Assuming user info is stored in req.user
+    interface ProfileUpdateData {
+      firstName?: string;
+      lastName?: string;
+      displayName?: string;
+      fatherName?: string;
+      motherName?: string;
+      address?: string;
+      streetAddress?: string;
+      upzila?: string;
+      zila?: string;
+      phoneNo?: string;
+      bloodGroup?: blood_type;
+      image?: string;
+    }
+
+    const profileUpdateData: ProfileUpdateData = req.body;
+
+    const {
+      firstName,
+      lastName,
+      displayName,
+      fatherName,
+      motherName,
+      address,
+      streetAddress,
+      upzila,
+      zila,
+      phoneNo,
+      bloodGroup,
+      image,
+    } = profileUpdateData;
+
+    // Find the user in the database
+    const findUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        Profile: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!findUser) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    // Prepare the update data object
+    const updateData: any = {};
+    if (firstName) updateData.firstName = firstName;
+    if (lastName) updateData.lastName = lastName;
+    if (displayName) updateData.displayName = displayName;
+    if (fatherName) updateData.fatherName = fatherName;
+    if (motherName) updateData.motherName = motherName;
+    if (address) updateData.address = address;
+    if (streetAddress) updateData.streetAddress = streetAddress;
+    if (upzila) updateData.upzila = upzila;
+    if (zila) updateData.zila = zila;
+    if (phoneNo) updateData.phoneNo = phoneNo;
+    if (bloodGroup) updateData.bloodGroup = bloodGroup;
+    if (image) updateData.image = image;
+
+    // Update the user's profile in the database
+    if (!findUser?.Profile) {
+      return res.status(404).json({ message: "Profile not found!" });
+    }
+
+    // Update the user's profile directly
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        Profile: {
+          update: updateData,
+        },
+      },
+    });
+
+    return res.status(200).json({
+      message: "Profile updated successfully!",
     });
   } catch (error) {
     internalServerError(res, error);

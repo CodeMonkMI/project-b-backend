@@ -59,7 +59,6 @@ export const signUp = async (req: Request, res: Response) => {
     const {
       firstName,
       lastName,
-
       email,
       blood,
       password,
@@ -120,7 +119,57 @@ export const signUp = async (req: Request, res: Response) => {
 };
 export const forgotPassword = async (req: Request, res: Response) => {};
 export const recoverAccount = async (req: Request, res: Response) => {};
-export const updatePassword = async (req: Request, res: Response) => {};
+
+interface UpdatePasswordRequestBody {
+  password: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export const updatePassword = async (
+  req: Request<{}, {}, UpdatePasswordRequestBody>,
+  res: Response
+) => {
+  try {
+    const { password, newPassword } = req.body;
+    const user: any = req.user; // Assuming user info is stored in req.user
+
+    // Find the user in the database
+    const findUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { password: true },
+    });
+
+    if (!findUser) {
+      return res.status(404).json({ password: "Password is incorrect!" });
+    }
+
+    // Check if the current password is correct
+    const isPasswordOk = bcrypt.compareSync(password, findUser.password);
+    if (!isPasswordOk) {
+      return res.status(400).json({ password: "Password is incorrect!" });
+    }
+
+    // Hash the new password
+    const SALT_ROUND = process.env.SALT_ROUND;
+    const hashedNewPassword = bcrypt.hashSync(
+      newPassword,
+      bcrypt.genSaltSync(SALT_ROUND ? parseInt(SALT_ROUND) : 10)
+    );
+
+    // Update the user's password in the database
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedNewPassword },
+    });
+
+    return res.status(200).json({
+      message: "Password updated successfully!",
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
 export const me = async (req: Request, res: Response) => {
   const user: any = req.user;
 
@@ -166,6 +215,33 @@ export const me = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "User found!",
       data: userData,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+
+export const updateInfo = async (req: Request, res: Response) => {
+  try {
+    const user: any = req.user; // Assuming user info is stored in req.user
+
+    // Extract only the email from the request body
+    const { email }: { email?: string } = req.body;
+
+    // Prepare the update data object
+    const updateData: any = {};
+    if (email) updateData.email = email;
+
+    // Update the user's profile directly
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        email: updateData.email,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Profile updated successfully!",
     });
   } catch (error) {
     internalServerError(res, error);
