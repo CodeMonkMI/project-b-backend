@@ -111,3 +111,38 @@ export const updateInfoValidator = [
     })
     .normalizeEmail(),
 ];
+
+export const updateProfileValidator = [
+  body("firstName")
+    .not()
+    .isEmpty()
+    .withMessage("First name is required!")
+    .isLength({ max: 50 })
+    .withMessage("First name must be less than 50 chars!"),
+  body("lastName")
+    .not()
+    .isEmpty()
+    .withMessage("Last name is required!")
+    .isLength({ max: 50 })
+    .withMessage("Last name must be less than 50 chars!"),
+  body("displayName")
+    .optional()
+    .isLength({ max: 50 })
+    .withMessage("Display name must be less than 50 chars!"),
+  body("fatherName")
+    .optional()
+    .isLength({ max: 50 })
+    .withMessage("Father name must be less than 50 chars!"),
+  body("motherName")
+    .optional()
+    .isLength({ max: 50 })
+    .withMessage("Mother name must be less than 50 chars!"),
+  body("streetAddress")
+    .optional()
+    .isLength({ max: 100 })
+    .withMessage("Street address must be less than 100 chars!"),
+  body("phoneNo")
+    .optional()
+    .isLength({ max: 15 })
+    .withMessage("Phone number must be less than 15 chars!"),
+];

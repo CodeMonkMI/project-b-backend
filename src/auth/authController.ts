@@ -247,3 +247,44 @@ export const updateInfo = async (req: Request, res: Response) => {
     internalServerError(res, error);
   }
 };
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const user: any = req.user;
+    const {
+      firstName,
+      lastName,
+      displayName,
+      fatherName,
+      motherName,
+      streetAddress,
+      phoneNo,
+      address,
+      upzila,
+      zila,
+    } = req.body;
+
+    const updateData: any = {};
+    if (firstName) updateData.firstName = firstName;
+    if (lastName) updateData.lastName = lastName;
+    if (displayName) updateData.displayName = displayName;
+    if (fatherName) updateData.fatherName = fatherName;
+    if (motherName) updateData.motherName = motherName;
+    if (streetAddress) updateData.streetAddress = streetAddress;
+    if (phoneNo) updateData.phoneNo = phoneNo;
+    if (address) updateData.address = address;
+    if (upzila) updateData.upzila = upzila;
+    if (zila) updateData.zila = zila;
+
+    const updatedProfile = await prisma.profile.update({
+      where: { userId: user.id },
+      data: updateData,
+    });
+
+    return res.status(200).json({
+      message: "Profile updated successfully!",
+      data: updatedProfile,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};

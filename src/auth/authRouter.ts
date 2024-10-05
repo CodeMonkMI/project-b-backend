@@ -8,6 +8,7 @@ import {
   signUp,
   updateInfo,
   updatePassword,
+  updateProfile,
 } from "./authController";
 import { authenticate } from "./authMiddleware";
 import {
@@ -15,6 +16,7 @@ import {
   signUpValidator,
   updateInfoValidator,
   updatePasswordValidator,
+  updateProfileValidator,
 } from "./authValidator";
 
 const authRouter: Router = express.Router();
@@ -37,5 +39,12 @@ authRouter.put(
   updateInfo
 );
 authRouter.post("/me", authenticate, me);
+authRouter.put(
+  "/update-profile",
+  authenticate,
+  updateProfileValidator,
+  errorResponse,
+  updateProfile
+);
 
 export default authRouter;
