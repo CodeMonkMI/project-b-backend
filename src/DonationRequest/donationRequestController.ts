@@ -59,10 +59,16 @@ export const all = async (
   req: Request<{}, {}, {}, AllReqQuery>,
   res: Response
 ) => {
+  const role = (req.user as any)?.role?.role;
+
   try {
     const data = await prisma.donationRequested.findMany({
       where: {
         OR: [{ deleteAt: { isSet: false } }, { deleteAt: null }],
+        ...(role !== "admin" &&
+          role !== "super_admin" && {
+            requestedById: (req.user as any)?.id,
+          }),
       },
       orderBy: {
         createdAt: "desc",

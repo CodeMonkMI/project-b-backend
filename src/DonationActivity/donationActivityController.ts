@@ -6,7 +6,20 @@ const prisma = new PrismaClient();
 
 export const all = async (req: Request, res: Response) => {
   try {
+    const role = (req.user as any)?.role?.role;
+    console.log(req.user);
+
     const data = await prisma.donationActivity.findMany({
+      where: {
+        ...(role !== "admin" &&
+          role !== "super_admin" && {
+            request: {
+              requestedBy: {
+                id: (req.user as any)?.id,
+              },
+            },
+          }),
+      },
       orderBy: {
         createdAt: "desc",
       },
