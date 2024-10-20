@@ -6,7 +6,8 @@ import generateUsername from "../helpers/generateUsername";
 import { generateToken } from "./authHelpers";
 
 const prisma = new PrismaClient();
-
+const SALT_ROUND = process.env.SALT_ROUND;
+const FORGOT_PASS_SECRET = process.env.FORGOT_PASS_SECRET;
 export const signIn = async (req: Request, res: Response) => {
   try {
     interface RequestBodyTypes {
@@ -71,8 +72,6 @@ export const signUp = async (req: Request, res: Response) => {
       role: string;
     } = req.body;
 
-    const SALT_ROUND = process.env.SALT_ROUND;
-
     const hash = bcrypt.hashSync(
       password,
       bcrypt.genSaltSync(SALT_ROUND ? parseInt(SALT_ROUND) : 10)
@@ -118,7 +117,29 @@ export const signUp = async (req: Request, res: Response) => {
   }
 };
 export const forgotPassword = async (req: Request, res: Response) => {};
-export const recoverAccount = async (req: Request, res: Response) => {};
+export const recoverAccount = async (req: Request, res: Response) => {
+  const user: any = req.user;
+
+  // Generate OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
+
+  // Send OTP via mail (pseudo-code)
+  // await sendOtpEmail(user.email, otp);
+
+  // Update OTP in the database
+  await prisma.otpRecords.create({
+    data: {
+      otp,
+      email: user.email,
+      userId: user.id,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // OTP valid for 15 minutes
+    },
+  });
+
+  return res
+    .status(200)
+    .json({ message: "We have send you an OTP to your email" });
+};
 
 interface UpdatePasswordRequestBody {
   password: string;
@@ -283,6 +304,100 @@ export const updateProfile = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "Profile updated successfully!",
       data: updatedProfile,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+
+export const verifyOtp = async (req: Request, res: Response) => {
+  try {
+    const { otpRecordId }: any = req;
+    // Generate a random string with 20 characters
+    const verificationId = Math.random().toString(36).substring(2, 22);
+    const hash = bcrypt.hashSync(
+      verificationId + FORGOT_PASS_SECRET,
+      bcrypt.genSaltSync(SALT_ROUND ? parseInt(SALT_ROUND) : 10)
+    );
+    await prisma.otpRecords.update({
+      where: { id: otpRecordId },
+      data: {
+        verificationId: hash,
+      },
+    });
+
+    return res.status(200).json({
+      message: "OTP verified successfully!",
+      data: hash,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+
+export const verifyVerificationId = async (req: Request, res: Response) => {
+  try {
+    const { data: verificationId }: any = req.query;
+
+    const data = await prisma.otpRecords.findFirst({
+      where: {
+        verificationId: verificationId,
+      },
+    });
+
+    if (!data) {
+      return res.status(400).json({
+        message: "Verification failed",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Verification successfully!",
+      data: verificationId,
+    });
+  } catch (error) {
+    internalServerError(res, error);
+  }
+};
+
+export const setNewPassword = async (req: Request, res: Response) => {
+  try {
+    const { newPassword, verificationId } = req.body;
+
+    if (!verificationId) {
+      return res.status(406).json({
+        message: "Verification ID is required",
+        data: null,
+      });
+    }
+    const otpRecord = await prisma.otpRecords.findFirst({
+      where: { verificationId },
+    });
+
+    if (!otpRecord) {
+      return res.status(406).json({ message: "Password update failed" });
+    }
+
+    const hashedNewPassword = bcrypt.hashSync(
+      newPassword,
+      bcrypt.genSaltSync(SALT_ROUND ? parseInt(SALT_ROUND) : 10)
+    );
+
+    await prisma.user.update({
+      where: { id: otpRecord.userId },
+      data: { password: hashedNewPassword, forgotVerificationId: null },
+    });
+
+    await prisma.otpRecords.delete({
+      where: {
+        id: otpRecord.id,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Password updated successfully!",
+      data: null,
     });
   } catch (error) {
     internalServerError(res, error);

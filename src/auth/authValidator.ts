@@ -146,3 +146,70 @@ export const updateProfileValidator = [
     .isLength({ max: 15 })
     .withMessage("Phone number must be less than 15 chars!"),
 ];
+
+export const recoverAccountValidator = [
+  body("email")
+    .isString()
+    .withMessage("Email or Username must be a string")
+    .notEmpty()
+    .custom(async (email, { req }) => {
+      const userData = await prisma.user.findFirst({
+        where: {
+          OR: [{ email: email }, { username: email }],
+        },
+      });
+      if (!userData)
+        throw new Error("We didn't find any info with your given info");
+
+      await prisma.otpRecords.deleteMany({
+        where: {
+          email,
+        },
+      });
+      req.user = userData;
+      return true;
+    }),
+];
+
+export const verifyOtpValidator = [
+  body("otp")
+    .isString()
+    .withMessage("OTP must be a string")
+    .isLength({ min: 6, max: 6 })
+    .withMessage("OTP must be exactly 6 digits")
+    .custom(async (_, { req }) => {
+      const otpRecord = await prisma.otpRecords.findFirst({
+        where: {
+          email: req.email,
+          expiresAt: {
+            gte: new Date(),
+          },
+        },
+      });
+      if (!otpRecord) {
+        throw new Error(" Invalid OTP");
+      }
+      req.otpRecordId = otpRecord.id;
+      return true;
+    }),
+  body("email")
+    .isEmail()
+    .withMessage("Invalid email format")
+    .notEmpty()
+    .withMessage("Email is required"),
+];
+
+export const setNewPasswordValidator = [
+  body("newPassword")
+    .isLength({ min: 6, max: 32 })
+    .withMessage("New password must be between 6 and 32 characters"),
+  body("confirmPassword")
+    .isString()
+    .withMessage("Confirm password is required")
+    .custom((confirmPassword, { req }) => {
+      if (confirmPassword !== req.body.newPassword) {
+        throw new Error("Passwords do not match");
+      }
+      return true;
+    }),
+];

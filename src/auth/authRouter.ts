@@ -4,26 +4,37 @@ import {
   forgotPassword,
   me,
   recoverAccount,
+  setNewPassword,
   signIn,
   signUp,
   updateInfo,
   updatePassword,
   updateProfile,
+  verifyOtp,
+  verifyVerificationId,
 } from "./authController";
 import { authenticate } from "./authMiddleware";
 import {
+  recoverAccountValidator,
+  setNewPasswordValidator,
   signInValidator,
   signUpValidator,
   updateInfoValidator,
   updatePasswordValidator,
   updateProfileValidator,
+  verifyOtpValidator,
 } from "./authValidator";
 
 const authRouter: Router = express.Router();
 authRouter.post("/sign-in", signInValidator, errorResponse, signIn);
 authRouter.post("/sign-up", signUpValidator, errorResponse, signUp);
 authRouter.post("/forgot-password", forgotPassword);
-authRouter.post("/recover-password", recoverAccount);
+authRouter.post(
+  "/recover-password",
+  recoverAccountValidator,
+  errorResponse,
+  recoverAccount
+);
 authRouter.put(
   "/update-password",
   authenticate,
@@ -45,6 +56,14 @@ authRouter.put(
   updateProfileValidator,
   errorResponse,
   updateProfile
+);
+authRouter.post("/verify-otp", verifyOtpValidator, errorResponse, verifyOtp);
+authRouter.get("/verify-verification-id", verifyVerificationId);
+authRouter.put(
+  "/set-password",
+  setNewPasswordValidator,
+  errorResponse,
+  setNewPassword
 );
 
 export default authRouter;

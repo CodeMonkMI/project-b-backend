@@ -70,6 +70,8 @@ model User {
   NotificationRecieved    Notification[]      @relation(name: "reciever", fields: [recievedNotificationIds], references: [id])
   readsNotificationIds    String[]
   NotificationReads       Notification[]      @relation(name: "reader", fields: [readsNotificationIds], references: [id])
+  forgotVerificationId    String?
+  OtpRecords              OtpRecords[]
 }
 
 model ResetPassword {
@@ -182,4 +184,15 @@ model Notification {
   deleteAt    DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model OtpRecords {
+  id             String   @id @default(uuid()) @map("_id")
+  otp            String   @unique
+  email          String
+  userId         String
+  verificationId String?
+  user           User     @relation(fields: [userId], references: [id])
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
 }
