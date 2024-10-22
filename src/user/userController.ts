@@ -3,6 +3,11 @@ import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
 import generateUsername from "../helpers/generateUsername";
+import {
+  sendMailToAdminsForNewUser,
+  sendMailToNewUser,
+  sendMailToVerifiedUser,
+} from "./Mail";
 import { nextRoleName, prevRoleName, randomPassword } from "./userHelpers";
 const { JWT_SECRET } = process.env;
 const prisma = new PrismaClient();
@@ -146,14 +151,26 @@ export const create = async (req: Request, res: Response) => {
         },
       },
       password: hash,
-      roleId: role,
+      roleId: "user",
       isVerified: true,
     },
 
     select: { ...SELECT_USER },
   });
 
-  // ? send password to email;
+  // send mail
+  sendMailToNewUser(email, password, `${firstName} ${lastName}`);
+  const admins = await prisma.user.findMany({
+    where: {
+      role: { role: "super_admin" },
+    },
+    select: {
+      email: true,
+    },
+  });
+  const adminsEmail = admins.map((a) => a.email);
+  sendMailToAdminsForNewUser(adminsEmail);
+  // send mail
   return res.status(200).json({
     isSuccess: true,
     message: "User created Successfully!",
@@ -173,7 +190,11 @@ export const verify = async (req: Request<CreateParams>, res: Response) => {
       where: {
         username,
       },
+      include: {
+        Profile: true,
+      },
     });
+    sendMailToVerifiedUser(userData.email);
     return res.status(200).json({
       isSuccess: true,
       message: "User verified Successfully!",
@@ -293,6 +314,7 @@ export const promote = async (
     internalServerError(res, error);
   }
 };
+
 export const demote = async (req: Request, res: Response) => {
   try {
     const { findUserRole, findUserId } = req.body;
