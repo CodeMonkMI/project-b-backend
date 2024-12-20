@@ -11,7 +11,7 @@ const QUERY_STRING = z.object({
 
 type Query = z.infer<typeof QUERY_STRING>;
 
-export const all = async (
+export const allRequest = async (
   req: Request<{}, {}, {}, Query>,
   res: Response,
   next: NextFunction
@@ -48,4 +48,28 @@ export const all = async (
   }
 };
 
-export default all;
+export const singleRequest = async (
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const single = await prisma.donationRequested.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        ...SELECT_REQUEST,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Request was successful!",
+      data: single,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
