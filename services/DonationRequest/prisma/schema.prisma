@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DONATION_STATUS {
+  REQUEST
+  PROGRESS
+  READY
+  HOLD
+  COMPLETED
+  DECLINED
+}
+
+enum BLOOD_TYPE {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+}
+
+model DonationRequested {
+  id            String          @id @default(cuid()) @map("id")
+  requestedById String?
+  donorId       String?
+  firstName     String
+  lastName      String
+  email         String?
+  phone         String
+  address       String
+  date          DateTime
+  blood         BLOOD_TYPE
+  reason        String
+  verifiedById  String?
+  status        DONATION_STATUS @default(REQUEST)
+  deleteAt      DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
