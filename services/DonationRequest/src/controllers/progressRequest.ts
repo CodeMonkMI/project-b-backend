@@ -43,3 +43,5 @@ export const progress = async (
     next(error);
   }
 };
+
+export default progress;

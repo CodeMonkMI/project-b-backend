@@ -62,3 +62,5 @@ export const complete = async (
     next(error);
   }
 };
+
+export default complete;

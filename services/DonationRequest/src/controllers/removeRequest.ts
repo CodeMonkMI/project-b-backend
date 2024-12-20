@@ -1,7 +1,7 @@
 import prisma from "@/prisma";
 import { NextFunction, Request, Response } from "express";
 
-export const hold = async (
+export const remove = async (
   req: Request<{ id: string }>,
   res: Response,
   next: NextFunction
@@ -23,3 +23,5 @@ export const hold = async (
     next(error);
   }
 };
+
+export default remove;

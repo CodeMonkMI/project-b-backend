@@ -45,3 +45,5 @@ export const create = async (
     next(error);
   }
 };
+
+export default create;

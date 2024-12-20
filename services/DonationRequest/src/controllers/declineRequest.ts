@@ -41,3 +41,5 @@ export const decline = async (
     next(error);
   }
 };
+
+export default decline;

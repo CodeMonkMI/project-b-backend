@@ -45,3 +45,5 @@ export const approve = async (
     next(error);
   }
 };
+
+export default approve;

@@ -1,6 +1,19 @@
 import cors from "cors";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
+import {
+  allRequest,
+  approveRequest,
+  assignRequest,
+  completeRequest,
+  crateRequest,
+  declineRequest,
+  holdRequest,
+  progressRequest,
+  removeRequest,
+  singleRequest,
+} from "./controllers";
+
 const app: Express = express();
 
 // basic middlewares
@@ -18,6 +31,16 @@ app.get("/health", (_req, res: Response) => {
   }
 });
 // todo all routes
+app.get("/request/all", allRequest);
+app.post("/request/create", crateRequest);
+app.get("/request/details/:id", singleRequest);
+app.put("/request/approve/:id", approveRequest);
+app.put("/request/complete/:id", completeRequest);
+app.put("/request/decline/:id", declineRequest);
+app.put("/request/progress/:id", progressRequest);
+app.put("/request/hold/:id", holdRequest);
+app.put("/request/assign/:id", assignRequest);
+app.delete("/request/remove", removeRequest);
 
 // 404 not found handler
 app.use((_req, res: Response) => {
@@ -31,7 +54,7 @@ app.use((err: any, _req: any, res: Response, _next: any) => {
 });
 
 const PORT = process.env.PORT || 5001;
-const SERVICE_NAME = process.env.SERVICE_NAME || "donation-request";
+const SERVICE_NAME = process.env.SERVICE_NAME || "Donation Request Service";
 app.listen(PORT, () => {
-  console.log(`${SERVICE_NAME} service is running on port ${PORT}`);
+  console.log(`${SERVICE_NAME}  is running on port ${PORT}`);
 });

@@ -50,3 +50,5 @@ export const assign = async (
     next(error);
   }
 };
+
+export default assign;

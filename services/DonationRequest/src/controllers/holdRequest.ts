@@ -44,3 +44,5 @@ export const hold = async (
     next(error);
   }
 };
+
+export default hold;
