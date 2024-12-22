@@ -1,4 +1,7 @@
+import { REQUEST_SERVICE } from "@/config";
 import prisma from "@/prisma";
+import invalidRequestIdError from "@/utils/invalidRequestError";
+import axios, { AxiosError } from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const allHistory = async (
@@ -38,6 +41,8 @@ export const requestHistory = async (
   next: NextFunction
 ) => {
   try {
+    const requestId = req.params.requestId;
+    await axios.get(`${REQUEST_SERVICE}/request/details/${requestId}`);
     const data = await prisma.donationHistory.findMany({
       where: {
         requestId: req.params.requestId,
@@ -62,6 +67,14 @@ export const requestHistory = async (
       data,
     });
   } catch (error) {
+    if (error instanceof AxiosError) {
+      console.log("axios error", error.response);
+      if (error.status === 404) {
+        return res.status(400).json({
+          errors: [invalidRequestIdError],
+        });
+      }
+    }
     next(error);
   }
 };

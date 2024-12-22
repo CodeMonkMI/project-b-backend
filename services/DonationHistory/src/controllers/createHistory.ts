@@ -1,5 +1,8 @@
+import { REQUEST_SERVICE } from "@/config";
 import prisma from "@/prisma";
 import { CreateDonationHistoryDTOSchema } from "@/schemas";
+import invalidRequestIdError from "@/utils/invalidRequestError";
+import axios, { AxiosError } from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const createHistory = async (
@@ -13,7 +16,9 @@ export const createHistory = async (
       return res.status(400).json({ errors: parsedData.error.errors });
     }
 
-    // todo validate request id if exist
+    await axios.get(
+      `${REQUEST_SERVICE}/request/details/${parsedData.data.requestId}`
+    );
 
     const data = await prisma.donationHistory.create({
       data: {
@@ -26,6 +31,14 @@ export const createHistory = async (
       data,
     });
   } catch (error) {
+    if (error instanceof AxiosError) {
+      console.log("axios error", error.response);
+      if (error.status === 404) {
+        return res.status(400).json({
+          errors: [invalidRequestIdError],
+        });
+      }
+    }
     next(error);
   }
 };
