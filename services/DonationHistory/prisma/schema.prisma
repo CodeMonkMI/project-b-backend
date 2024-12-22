@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DONATION_ACTIVITY_STATUS {
+  REQUEST
+  APPROVE
+  PROGRESS
+  READY
+  HOLD
+  COMPLETED
+  DECLINED
+  DELETED
+}
+
+model DonationHistory {
+  id        String                   @id @default(cuid())
+  type      DONATION_ACTIVITY_STATUS @default(REQUEST)
+  message   String
+  requestId String
+  deleteAt  DateTime?
+  createdAt DateTime                 @default(now())
+
+  @@index([requestId], name: "requestId")
+}
