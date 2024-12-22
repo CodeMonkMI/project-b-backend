@@ -29,6 +29,8 @@ export const assign = async (
       });
     }
 
+    // todo check donor as user is exists or not
+
     await prisma.donationRequested.update({
       where: { id },
       data: { donorId: parsedData.data.donor, status: DONATION_STATUS.READY },

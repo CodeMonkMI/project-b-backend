@@ -30,7 +30,6 @@ export const hold = async (
         status: DONATION_STATUS.HOLD,
         donorId: null,
       },
-      select: {},
     });
 
     //   todo create hold history

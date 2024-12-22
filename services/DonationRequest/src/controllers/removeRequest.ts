@@ -7,6 +7,19 @@ export const remove = async (
   next: NextFunction
 ) => {
   try {
+    const id = req.params.id;
+    const findRequest = await prisma.donationRequested.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!findRequest) {
+      return res.status(404).json({
+        message: "Request not found!",
+        data: null,
+      });
+    }
     await prisma.donationRequested.update({
       where: { id: req.params.id },
       data: { deleteAt: new Date() },

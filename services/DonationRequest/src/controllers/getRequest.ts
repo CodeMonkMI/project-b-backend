@@ -16,17 +16,18 @@ export const allRequest = async (
   res: Response,
   next: NextFunction
 ) => {
-  const reqUser = (req as any).user as any;
-  const role = reqUser?.role?.role;
+  // const reqUser = (req as any).user as any;
+  // const role = reqUser?.role?.role;
 
   try {
     const data = await prisma.donationRequested.findMany({
       where: {
-        OR: [{ deleteAt: { not: null } }, { deleteAt: undefined }],
-        ...(role !== "admin" &&
-          role !== "super_admin" && {
-            requestedById: reqUser?.id,
-          }),
+        deleteAt: null,
+        // OR: [{ deleteAt: { not: null } }, { deleteAt: undefined }],
+        // ...(role !== "admin" &&
+        //   role !== "super_admin" && {
+        //     requestedById: reqUser?.id,
+        //   }),
       },
       orderBy: {
         createdAt: "desc",
@@ -64,6 +65,13 @@ export const singleRequest = async (
         ...SELECT_REQUEST,
       },
     });
+
+    if (!single) {
+      return res.status(404).json({
+        message: "Request not found!",
+        data: null,
+      });
+    }
 
     return res.status(200).json({
       message: "Request was successful!",

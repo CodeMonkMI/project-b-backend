@@ -40,7 +40,7 @@ app.put("/request/decline/:id", declineRequest);
 app.put("/request/progress/:id", progressRequest);
 app.put("/request/hold/:id", holdRequest);
 app.put("/request/assign/:id", assignRequest);
-app.delete("/request/remove", removeRequest);
+app.delete("/request/remove/:id", removeRequest);
 
 // 404 not found handler
 app.use((_req, res: Response) => {

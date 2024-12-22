@@ -34,7 +34,7 @@ export const decline = async (
 
     //  todo create notification for requested user
     return res.status(202).json({
-      message: "Donation request approved!",
+      message: "Donation request declined!",
       data: null,
     });
   } catch (error) {
