@@ -1,6 +1,8 @@
+import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
 import SELECT_REQUEST from "@/utils/selectUser";
 import { DONATION_STATUS } from "@prisma/client";
+import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const approve = async (
@@ -34,7 +36,12 @@ export const approve = async (
       },
     });
 
-    // todo create approve history
+    // create approve history
+    await axios.post(`${DONATION_HISTORY}/history/create`, {
+      type: "APPROVE",
+      message: "New request approved!",
+      requestId: item.id,
+    });
     // todo send notification who asked for donation
 
     return res.status(202).json({

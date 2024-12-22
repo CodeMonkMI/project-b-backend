@@ -1,5 +1,7 @@
+import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
 import { DONATION_STATUS } from "@prisma/client";
+import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const decline = async (
@@ -30,9 +32,15 @@ export const decline = async (
       },
     });
 
-    //   todo create history for decline request
+    //  create history for decline request
+    await axios.post(`${DONATION_HISTORY}/history/create`, {
+      type: "DECLINED",
+      message: "Request is being declined!",
+      requestId: id,
+    });
 
     //  todo create notification for requested user
+
     return res.status(202).json({
       message: "Donation request declined!",
       data: null,

@@ -1,4 +1,6 @@
+import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
+import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const remove = async (
@@ -25,7 +27,12 @@ export const remove = async (
       data: { deleteAt: new Date() },
     });
 
-    // todo create delete history
+    // create delete history
+    await axios.post(`${DONATION_HISTORY}/history/create`, {
+      type: "DELETED",
+      message: "An user asked for a blood request!",
+      requestId: id,
+    });
     // todo create notification for requested id
 
     return res.status(204).json({

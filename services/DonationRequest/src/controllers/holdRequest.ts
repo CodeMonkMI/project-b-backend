@@ -1,5 +1,7 @@
+import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
 import { DONATION_STATUS } from "@prisma/client";
+import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const hold = async (
@@ -32,7 +34,12 @@ export const hold = async (
       },
     });
 
-    //   todo create hold history
+    // create hold history
+    await axios.post(`${DONATION_HISTORY}/history/create`, {
+      type: "HOLD",
+      message: "Request is being hold!",
+      requestId: id,
+    });
 
     // todo create notification requested user
     return res.status(202).json({

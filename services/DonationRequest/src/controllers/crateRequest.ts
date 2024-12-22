@@ -1,7 +1,9 @@
+import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
 import { CreateDonationRequestDTOSchema } from "@/schemas";
 import SELECT_REQUEST from "@/utils/selectUser";
 import { DONATION_STATUS } from "@prisma/client";
+import axios from "axios";
 
 import { NextFunction, Request, Response } from "express";
 
@@ -28,9 +30,19 @@ export const create = async (
       },
     });
 
-    //  TODO create request history
+    //   create request history
+    await axios.post(`${DONATION_HISTORY}/history/create`, {
+      type: "REQUEST",
+      message: "An user asked for a blood request!",
+      requestId: item.id,
+    });
     if (user) {
-      // TODO create request history
+      // create progress history
+      await axios.post(`${DONATION_HISTORY}/history/create`, {
+        type: "PROGRESS",
+        message: "A request is in progress",
+        requestId: item.id,
+      });
     }
 
     // todo create notification

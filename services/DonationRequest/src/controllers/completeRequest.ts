@@ -1,5 +1,7 @@
+import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
 import { DONATION_STATUS } from "@prisma/client";
+import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const complete = async (
@@ -8,9 +10,10 @@ export const complete = async (
   next: NextFunction
 ) => {
   try {
+    const id = req.params.id;
     const donationRequest = await prisma.donationRequested.findFirst({
       where: {
-        id: req.params.id,
+        id,
         status: DONATION_STATUS.READY,
       },
     });
@@ -23,7 +26,7 @@ export const complete = async (
 
     await prisma.donationRequested.update({
       where: {
-        id: req.params.id,
+        id,
         status: DONATION_STATUS.READY,
       },
       data: {
@@ -33,7 +36,12 @@ export const complete = async (
 
     // todo update user profile last donation date
 
-    // todo crate a complete history
+    // crate a complete history
+    await axios.post(`${DONATION_HISTORY}/history/create`, {
+      type: "COMPLETE",
+      message: "A request is been completed!",
+      requestId: id,
+    });
 
     // todo create notification for donor and request user
 
