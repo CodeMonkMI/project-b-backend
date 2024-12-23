@@ -1,6 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
-import express, { Express, Response } from "express";
+import express, { Express, Request, Response } from "express";
+import { rateLimit } from "express-rate-limit";
 import morgan from "morgan";
 import { configureRoutes } from "./utils";
 
@@ -21,6 +22,20 @@ app.get("/health", (_req, res: Response) => {
     return res.status(500).json({ message: "DOWN" });
   }
 });
+
+// add rate limiter on api requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 100,
+  legacyHeaders: false,
+  handler: (_req: Request, res: Response) => {
+    return res.status(429).json({
+      message: "Too many requests, please try again later.",
+    });
+  },
+});
+
+app.use("/api", limiter);
 
 // configure all routes
 configureRoutes(app);
