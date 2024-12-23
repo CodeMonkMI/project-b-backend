@@ -1,0 +1,127 @@
+{
+    "services": {
+        "donationHistory": {
+            "url": "http://localhost:5002",
+            "routes": [
+                {
+                    "path": "/history",
+                    "methods": [
+                        "get"
+                    ]
+                },
+                {
+                    "path": "/history/:requestId",
+                    "methods": [
+                        "get"
+                    ]
+                },
+                {
+                    "path": "/history/create",
+                    "methods": [
+                        "post"
+                    ]
+                },
+                {
+                    "path": "/history/:requestId",
+                    "methods": [
+                        "delete"
+                    ]
+                }
+            ]
+        },
+        "donationRequest": {
+            "url": "http://localhost:5001",
+            "routes": [
+                {
+                    "path": "/all",
+                    "methods": [
+                        "get"
+                    ]
+                },
+                {
+                    "path": "/details/:id",
+                    "methods": [
+                        "get"
+                    ]
+                },
+                {
+                    "path": "/create",
+                    "methods": [
+                        "post"
+                    ]
+                },
+                {
+                    "path": "/approve/:id",
+                    "methods": [
+                        "put"
+                    ]
+                },
+                {
+                    "path": "/complete/:id",
+                    "methods": [
+                        "put"
+                    ]
+                },
+                {
+                    "path": "/decline/:id",
+                    "methods": [
+                        "put"
+                    ]
+                },
+                {
+                    "path": "/progress/:id",
+                    "methods": [
+                        "put"
+                    ]
+                },
+                {
+                    "path": "/hold/:id",
+                    "methods": [
+                        "put"
+                    ]
+                },
+                {
+                    "path": "/assign/:id",
+                    "methods": [
+                        "put"
+                    ]
+                },
+                {
+                    "path": "/remove/:id",
+                    "methods": [
+                        "delete"
+                    ]
+                }
+            ]
+        },
+        "notification": {
+            "url": "http://localhost:5003",
+            "routes": [
+                {
+                    "path": "/:userId",
+                    "methods": [
+                        "get"
+                    ]
+                },
+                {
+                    "path": "/:id",
+                    "methods": [
+                        "put"
+                    ]
+                },
+                {
+                    "path": "/create",
+                    "methods": [
+                        "post"
+                    ]
+                },
+                {
+                    "path": "/:userId",
+                    "methods": [
+                        "delete"
+                    ]
+                }
+            ]
+        }
+    }
+}
