@@ -14,18 +14,6 @@
                     "methods": [
                         "get"
                     ]
-                },
-                {
-                    "path": "/history/create",
-                    "methods": [
-                        "post"
-                    ]
-                },
-                {
-                    "path": "/history/:requestId",
-                    "methods": [
-                        "delete"
-                    ]
                 }
             ]
         },
@@ -107,12 +95,6 @@
                     "path": "/notification/:id",
                     "methods": [
                         "put"
-                    ]
-                },
-                {
-                    "path": "/notification/create",
-                    "methods": [
-                        "post"
                     ]
                 },
                 {
