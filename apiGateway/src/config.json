@@ -33,61 +33,61 @@
             "url": "http://localhost:5001",
             "routes": [
                 {
-                    "path": "/all",
+                    "path": "/request/all",
                     "methods": [
                         "get"
                     ]
                 },
                 {
-                    "path": "/details/:id",
+                    "path": "/request/details/:id",
                     "methods": [
                         "get"
                     ]
                 },
                 {
-                    "path": "/create",
+                    "path": "/request/create",
                     "methods": [
                         "post"
                     ]
                 },
                 {
-                    "path": "/approve/:id",
+                    "path": "/request/approve/:id",
                     "methods": [
                         "put"
                     ]
                 },
                 {
-                    "path": "/complete/:id",
+                    "path": "/request/complete/:id",
                     "methods": [
                         "put"
                     ]
                 },
                 {
-                    "path": "/decline/:id",
+                    "path": "/request/decline/:id",
                     "methods": [
                         "put"
                     ]
                 },
                 {
-                    "path": "/progress/:id",
+                    "path": "/request/progress/:id",
                     "methods": [
                         "put"
                     ]
                 },
                 {
-                    "path": "/hold/:id",
+                    "path": "/request/hold/:id",
                     "methods": [
                         "put"
                     ]
                 },
                 {
-                    "path": "/assign/:id",
+                    "path": "/request/assign/:id",
                     "methods": [
                         "put"
                     ]
                 },
                 {
-                    "path": "/remove/:id",
+                    "path": "/request/remove/:id",
                     "methods": [
                         "delete"
                     ]
@@ -98,25 +98,25 @@
             "url": "http://localhost:5003",
             "routes": [
                 {
-                    "path": "/:userId",
+                    "path": "/notification/:userId",
                     "methods": [
                         "get"
                     ]
                 },
                 {
-                    "path": "/:id",
+                    "path": "/notification/:id",
                     "methods": [
                         "put"
                     ]
                 },
                 {
-                    "path": "/create",
+                    "path": "/notification/create",
                     "methods": [
                         "post"
                     ]
                 },
                 {
-                    "path": "/:userId",
+                    "path": "/notification/:userId",
                     "methods": [
                         "delete"
                     ]

@@ -5,7 +5,12 @@ import config from "./config.json";
 const createHandler = (hostname: string, path: string, method: string) => {
   return async (req: Request, res: Response) => {
     try {
-      const url = `${hostname}${path}`;
+      let url: string = `${hostname}${path}`;
+      req.params &&
+        Object.keys(req.params).forEach((param) => {
+          url = url.replace(`:${param}`, req.params[param]);
+        });
+      console.log("url", url);
       const { data } = await axios({
         method,
         url,
@@ -31,11 +36,10 @@ export const configureRoutes = (app: Express) => {
   Object.entries(config.services).forEach(([name, service]) => {
     service.routes.forEach((route) => {
       route.methods.forEach((method) => {
-        // todo add prefix for service name
-        const endpoint = `/api/${name}${route.path}`;
+        const endpoint = `/api${route.path}`;
         const hostname = service.url;
-        const handler = createHandler(hostname, endpoint, method);
-        console.log(`${method} - ${endpoint}`);
+        const handler = createHandler(hostname, route.path, method);
+        // console.log(`${method} - ${endpoint}`);
         app[method](endpoint, handler);
       });
     });

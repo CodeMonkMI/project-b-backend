@@ -25,10 +25,10 @@ app.get("/health", (_req, res: Response) => {
   }
 });
 // create routes
-app.get("/:userId", allNotification);
-app.post("/create", createNotification);
-app.delete("/:userId", removeNotification);
-app.put("/:id", readNotification);
+app.get("/notification/:userId", allNotification);
+app.post("notification//create", createNotification);
+app.delete("/notification/:userId", removeNotification);
+app.put("/notification/:id", readNotification);
 
 // 404 not found handler
 app.use((_req, res: Response) => {
