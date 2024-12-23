@@ -1,3 +1,9 @@
+import {
+  allNotification,
+  createNotification,
+  readNotification,
+  removeNotification,
+} from "@/controllers/";
 import cors from "cors";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
@@ -18,7 +24,11 @@ app.get("/health", (_req, res: Response) => {
     return res.status(500).json({ message: "DOWN" });
   }
 });
-// todo create routes
+// create routes
+app.get("/:userId", allNotification);
+app.post("/create", createNotification);
+app.delete("/:userId", removeNotification);
+app.put("/:id", readNotification);
 
 // 404 not found handler
 app.use((_req, res: Response) => {

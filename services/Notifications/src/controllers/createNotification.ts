@@ -1,13 +1,6 @@
 import prisma from "@/prisma";
 import { NotificationDTOSchema } from "@/schemas";
-import { NOTIFICATION_TYPE } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
-
-type Notification = {
-  type: NOTIFICATION_TYPE;
-  message: string;
-  receiver: string;
-};
 
 export const createNotification = async (
   req: Request,
@@ -20,17 +13,17 @@ export const createNotification = async (
       return res.status(400).json({ errors: parsedData.error.errors });
     }
 
-    const notifications: (Notification & { receiver: string })[] =
-      parsedData.data.receivers.map((rc) => {
-        return {
-          type: parsedData.data.type,
-          message: parsedData.data.message,
-          receiver: rc,
-        };
-      });
-
-    const data = await prisma.notification.createMany({
-      data: notifications,
+    const data = await prisma.notification.create({
+      data: {
+        ...parsedData.data,
+      },
+      select: {
+        id: true,
+        type: true,
+        message: true,
+        createdAt: true,
+        isRead: true,
+      },
     });
 
     return res.status(200).json({
