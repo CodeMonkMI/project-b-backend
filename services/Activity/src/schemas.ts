@@ -1,8 +1,8 @@
-import { NOTIFICATION_TYPE } from "@prisma/client";
+import { ActivityStatus } from "@prisma/client";
 import { z } from "zod";
 
-export const NotificationDTOSchema = z.object({
-  type: z.nativeEnum(NOTIFICATION_TYPE).default("REQUEST"),
-  message: z.string().min(10).max(255),
-  receiver: z.string(),
+export const ActivityDTOSchema = z.object({
+  type: z.nativeEnum(ActivityStatus).optional(),
+  message: z.string(),
+  user: z.string(),
 });

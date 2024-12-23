@@ -1,5 +1,5 @@
 import prisma from "@/prisma";
-import { NotificationDTOSchema } from "@/schemas";
+import { ActivityDTOSchema } from "@/schemas";
 import { NextFunction, Request, Response } from "express";
 
 export const createActivity = async (
@@ -8,21 +8,14 @@ export const createActivity = async (
   next: NextFunction
 ) => {
   try {
-    const parsedData = NotificationDTOSchema.safeParse(req.body);
+    const parsedData = ActivityDTOSchema.safeParse(req.body);
     if (!parsedData.success) {
       return res.status(400).json({ errors: parsedData.error.errors });
     }
 
-    const data = await prisma.notification.create({
+    const data = await prisma.activity.create({
       data: {
         ...parsedData.data,
-      },
-      select: {
-        id: true,
-        type: true,
-        message: true,
-        createdAt: true,
-        isRead: true,
       },
     });
 

@@ -1,9 +1,4 @@
-import {
-  allNotification,
-  createNotification,
-  readNotification,
-  removeNotification,
-} from "@/controllers/";
+import { createActivity, getActivity } from "@/controllers/";
 import cors from "cors";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
@@ -25,10 +20,8 @@ app.get("/health", (_req, res: Response) => {
   }
 });
 // create routes
-app.get("/:userId", allNotification);
-app.post("/create", createNotification);
-app.delete("/:userId", removeNotification);
-app.put("/:id", readNotification);
+app.get("/activity", getActivity);
+app.post("/activity", createActivity);
 
 // 404 not found handler
 app.use((_req, res: Response) => {
@@ -41,8 +34,8 @@ app.use((err: any, _req: any, res: Response, _next: any) => {
   res.status(500).json({ message: "Internal Server Error" });
 });
 
-const PORT = process.env.PORT || 5003;
-const SERVICE_NAME = process.env.SERVICE_NAME || "Notification Service";
+const PORT = process.env.PORT || 5004;
+const SERVICE_NAME = process.env.SERVICE_NAME || "Activity Service";
 app.listen(PORT, () => {
   console.log(`${SERVICE_NAME}  is running on port ${PORT}`);
 });

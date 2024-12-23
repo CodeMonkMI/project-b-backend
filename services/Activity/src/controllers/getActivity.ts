@@ -1,15 +1,14 @@
 import prisma from "@/prisma";
 import { NextFunction, Request, Response } from "express";
 
-export const allNotification = async (
+export const getActivity = async (
   req: Request<{ userId: string }>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const data = await prisma.notification.findMany({
+    const data = await prisma.activity.findMany({
       where: {
-        receiver: req.params.userId,
         deleteAt: null,
       },
       select: {
