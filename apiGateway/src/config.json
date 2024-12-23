@@ -104,6 +104,17 @@
                     ]
                 }
             ]
+        },
+        "activity": {
+            "url": "http://localhost:5004",
+            "routes": [
+                {
+                    "path": "/activity",
+                    "methods": [
+                        "get"
+                    ]
+                }
+            ]
         }
     }
 }
