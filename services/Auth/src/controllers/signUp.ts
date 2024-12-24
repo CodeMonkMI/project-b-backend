@@ -1,0 +1,97 @@
+import { NOTIFICATION_SERVICE } from "@/config";
+import prisma from "@/prisma";
+import { SignUpSchema, TokenDataSchema } from "@/schemas";
+import axios from "axios";
+import bcrypt from "bcrypt";
+import { NextFunction, Request, Response } from "express";
+import { z } from "zod";
+const SALT_ROUND = process.env.SALT_ROUND;
+type TokenRequiredType = z.infer<typeof TokenDataSchema>;
+
+function generateUsername(name: string) {
+  // Generate a random number between 1000 and 9999
+  const randomNumber = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+
+  // Concatenate the name and random number
+  const username = `${name}${randomNumber}`;
+
+  return username.replace(" ", "_");
+}
+
+export default generateUsername;
+
+export const signUp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const parsedData = SignUpSchema.safeParse(req.body);
+    if (!parsedData.success) {
+      return res.status(400).json({ errors: parsedData.error.errors });
+    }
+
+    const { password, firstName, lastName, email } = parsedData.data;
+
+    const hash = bcrypt.hashSync(
+      password,
+      bcrypt.genSaltSync(SALT_ROUND ? parseInt(SALT_ROUND) : 10)
+    );
+    const role = await prisma.role.findUnique({ where: { role: "user" } });
+    if (!role) {
+      console.log("there no role exist");
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    let username = generateUsername(firstName + " " + lastName);
+    while (true) {
+      const data = await prisma.user.findFirst({
+        where: { username },
+      });
+      if (!data) {
+        break;
+      }
+      username = generateUsername(firstName);
+    }
+
+    await prisma.user.create({
+      data: {
+        email,
+        username,
+        roleId: role?.id,
+        password: hash,
+      },
+    });
+
+    // todo create user profile via user service
+    // todo send mail to registered user
+
+    // create a notification for admins
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          OR: [{ role: "admin" }, { role: "super_admin" }],
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    admins.forEach((admin) => {
+      axios.post(`${NOTIFICATION_SERVICE}/notification/create`, {
+        type: "ACCOUNT",
+        receiver: admin.id,
+        message: "New account is created. Need to verify it",
+      });
+    });
+
+    return res.status(200).json({
+      isSuccess: true,
+      message: "Registration Successful",
+      data: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

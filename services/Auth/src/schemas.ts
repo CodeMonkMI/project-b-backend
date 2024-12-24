@@ -5,10 +5,12 @@ export const SignInSchema = z.object({
   password: z.string(),
 });
 
-export const signUpSchema = z.object({
-  username: z.string().min(3).max(20),
+export const SignUpSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6).max(32),
+  firstName: z.string().min(3),
+  lastName: z.string().min(3),
+  bloodGroup: z.string(),
 });
 
 export const TokenDataSchema = z.object({
@@ -16,4 +18,8 @@ export const TokenDataSchema = z.object({
   email: z.string().email(),
   username: z.string(),
   role: z.string(),
+});
+
+export const VerifyTokenSchema = z.object({
+  accessToken: z.string(),
 });

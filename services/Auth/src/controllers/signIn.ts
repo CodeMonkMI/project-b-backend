@@ -9,7 +9,7 @@ type TokenRequiredType = z.infer<typeof TokenDataSchema>;
 
 const { JWT_SECRET } = process.env;
 
-export const generateToken = (user: TokenRequiredType): string => {
+const generateToken = (user: TokenRequiredType): string => {
   const token = jwt.sign(
     {
       id: user.id,

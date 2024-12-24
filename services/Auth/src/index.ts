@@ -1,12 +1,11 @@
 import cors from "cors";
+import dotenv from "dotenv";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
-import {
-  allHistory,
-  createHistory,
-  removeHistory,
-  singleHistory,
-} from "./controllers";
+import checkUserRole from "./checkUserrole";
+import { signIn, signUp, verifyToken } from "./controllers";
+
+dotenv.config();
 
 const app: Express = express();
 
@@ -24,10 +23,18 @@ app.get("/health", (_req, res: Response) => {
     return res.status(500).json({ message: "DOWN" });
   }
 });
-app.get("/history", allHistory);
-app.get("/history/:requestId", singleHistory);
-app.post("/history/create", createHistory);
-app.delete("/history/:requestId", removeHistory);
+
+// check if user roles exist
+let userRoleChecked = false;
+if (!userRoleChecked) {
+  console.log("checked");
+  checkUserRole();
+  userRoleChecked = true;
+}
+
+app.post("/signin", signIn);
+app.post("/signup", signUp);
+app.post("/verify-token", verifyToken);
 
 // 404 not found handler
 app.use((_req, res: Response) => {
@@ -40,8 +47,8 @@ app.use((err: any, _req: any, res: Response, _next: any) => {
   res.status(500).json({ message: "Internal Server Error" });
 });
 
-const PORT = process.env.PORT || 5002;
-const SERVICE_NAME = process.env.SERVICE_NAME || "Donation Request Service";
+const PORT = process.env.PORT || 5005;
+const SERVICE_NAME = process.env.SERVICE_NAME || "Auth Service";
 app.listen(PORT, () => {
   console.log(`${SERVICE_NAME}  is running on port ${PORT}`);
 });
