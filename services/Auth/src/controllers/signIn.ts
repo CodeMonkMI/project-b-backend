@@ -1,5 +1,6 @@
 import prisma from "@/prisma";
 import { SignInSchema, TokenDataSchema } from "@/schemas";
+import { LoginAttempt } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
@@ -23,6 +24,20 @@ const generateToken = (user: TokenRequiredType): string => {
   return token;
 };
 
+type LoginHistoryType = {
+  attempt: LoginAttempt;
+  ipAddress: string;
+  userAgent: string;
+  userId: string;
+};
+const createLoginHistory = async (info: LoginHistoryType) => {
+  await prisma.loginHistory.create({
+    data: {
+      ...info,
+    },
+  });
+};
+
 export const signIn = async (
   req: Request,
   res: Response,
@@ -34,6 +49,10 @@ export const signIn = async (
     if (!parsedData.success) {
       return res.status(400).json({ erros: parsedData.error.errors });
     }
+
+    // get ip address and user agent
+    const ipAddress = req.header["x-forwarded-for"] || req.ip || "";
+    const userAgent = req.header["user-agent"] || "";
 
     const { password, username } = parsedData.data;
 
@@ -59,26 +78,52 @@ export const signIn = async (
     if (!findUser)
       return res.status(400).json({ message: "Invalid Credentials" });
 
-    const isPasswordOk = bcrypt.compareSync(password, findUser.password);
+    const isPasswordOk = await bcrypt.compare(password, findUser.password);
 
     if (!isPasswordOk)
       return res.status(400).json({ message: "Invalid Credentials" });
-    console.log(findUser);
-    if (findUser.status === "PENDING")
+
+    if (findUser.status === "PENDING") {
+      await createLoginHistory({
+        ipAddress,
+        userAgent,
+        userId: findUser.id,
+        attempt: "FAILED",
+      });
       return res.status(406).json({
         message:
           "You account is not yet is still pending! We will let you know after activating you account!",
       });
-    if (findUser.status === "INACTIVE")
+    }
+    if (findUser.status === "INACTIVE") {
+      await createLoginHistory({
+        ipAddress,
+        userAgent,
+        userId: findUser.id,
+        attempt: "FAILED",
+      });
       return res.status(406).json({
         message:
           "You account is not yet is still pending! We will let you know after activating you account!",
       });
-    if (findUser.status === "SUSPENDED")
+    }
+    if (findUser.status === "SUSPENDED") {
+      await createLoginHistory({
+        ipAddress,
+        userAgent,
+        userId: findUser.id,
+        attempt: "FAILED",
+      });
       return res.status(406).json({
         message: "You account is  suspended! Contact us for more details!",
       });
-
+    }
+    await createLoginHistory({
+      ipAddress,
+      userAgent,
+      userId: findUser.id,
+      attempt: "SUCCESS",
+    });
     const token = generateToken({
       email: findUser.email,
       id: findUser.id,

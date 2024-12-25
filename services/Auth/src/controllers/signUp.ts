@@ -33,10 +33,30 @@ export const signUp = async (
 
     const { password, firstName, lastName, email } = parsedData.data;
 
-    const hash = bcrypt.hashSync(
-      password,
-      bcrypt.genSaltSync(SALT_ROUND ? parseInt(SALT_ROUND) : 10)
-    );
+    // find if any user exist or not
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (user) {
+      return res.status(400).json({
+        errors: [
+          {
+            code: "invalid_data",
+            expected: "unique",
+            received: "existed email",
+            path: ["email"],
+            message: "Required Unique",
+          },
+        ],
+      });
+    }
+
+    const salt = await bcrypt.genSalt(SALT_ROUND ? parseInt(SALT_ROUND) : 10);
+    const hash = await bcrypt.hash(password, salt);
+
     const role = await prisma.role.findUnique({ where: { role: "user" } });
     if (!role) {
       console.log("there no role exist");
