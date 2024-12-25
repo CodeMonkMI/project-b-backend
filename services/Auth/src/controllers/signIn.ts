@@ -63,7 +63,7 @@ export const signIn = async (
 
     if (!isPasswordOk)
       return res.status(400).json({ message: "Invalid Credentials" });
-
+    console.log(findUser);
     if (findUser.status === "PENDING")
       return res.status(406).json({
         message:
@@ -88,7 +88,7 @@ export const signIn = async (
 
     return res.status(200).json({
       message: "Login was successful",
-      data: { token },
+      data: { accessToken: token },
     });
   } catch (error) {
     next(error);

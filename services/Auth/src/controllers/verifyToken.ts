@@ -48,6 +48,9 @@ export const verifyToken = async (
 
     return res.status(200).json({ message: "Authorized", user });
   } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     next(error);
   }
 };
