@@ -1,117 +1,193 @@
 {
     "services": {
         "donationHistory": {
+            "prefix": "history",
             "url": "http://localhost:5002",
             "routes": [
                 {
                     "path": "/history",
                     "methods": [
                         "get"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/history/:requestId",
                     "methods": [
                         "get"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 }
             ]
         },
         "donationRequest": {
+            "prefix": "request",
             "url": "http://localhost:5001",
             "routes": [
                 {
                     "path": "/request/all",
                     "methods": [
                         "get"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/details/:id",
                     "methods": [
                         "get"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/create",
                     "methods": [
                         "post"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/approve/:id",
                     "methods": [
                         "put"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/complete/:id",
                     "methods": [
                         "put"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/decline/:id",
                     "methods": [
                         "put"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/progress/:id",
                     "methods": [
                         "put"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/hold/:id",
                     "methods": [
                         "put"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/assign/:id",
                     "methods": [
                         "put"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/request/remove/:id",
                     "methods": [
                         "delete"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 }
             ]
         },
         "notification": {
+            "prefix": "notification",
             "url": "http://localhost:5003",
             "routes": [
                 {
                     "path": "/notification/:userId",
                     "methods": [
                         "get"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/notification/:id",
                     "methods": [
                         "put"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 },
                 {
                     "path": "/notification/:userId",
                     "methods": [
                         "delete"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 }
             ]
         },
         "activity": {
+            "prefix": "activity",
             "url": "http://localhost:5004",
             "routes": [
                 {
                     "path": "/activity",
                     "methods": [
                         "get"
+                    ],
+                    "middlewares": [
+                        "auth"
+                    ]
+                }
+            ]
+        },
+        "auth": {
+            "prefix": "auth",
+            "url": "http://localhost:5005",
+            "routes": [
+                {
+                    "path": "/signin",
+                    "methods": [
+                        "post"
+                    ],
+                    "middlewares": [
+                        "auth"
+                    ]
+                },
+                {
+                    "path": "/signup",
+                    "methods": [
+                        "post"
+                    ],
+                    "middlewares": [
+                        "auth"
                     ]
                 }
             ]

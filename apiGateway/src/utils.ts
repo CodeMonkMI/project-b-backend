@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Express, Request, Response } from "express";
 import config from "./config.json";
+import middlewares from "./middlewares";
 
 const createHandler = (hostname: string, path: string, method: string) => {
   return async (req: Request, res: Response) => {
@@ -31,16 +32,22 @@ const createHandler = (hostname: string, path: string, method: string) => {
   };
 };
 
+const generateMiddlewares = (names: string[]) => {
+  return names.map((name) => middlewares[name]);
+};
+
 export const configureRoutes = (app: Express) => {
   console.log("created routes");
   Object.entries(config.services).forEach(([name, service]) => {
     service.routes.forEach((route) => {
       route.methods.forEach((method) => {
-        const endpoint = `/api${route.path}`;
+        const endpoint = `/api/${service.prefix}${route.path}`;
         const hostname = service.url;
         const handler = createHandler(hostname, route.path, method);
-        // console.log(`${method} - ${endpoint}`);
-        app[method](endpoint, handler);
+        const requiredMiddlewares = generateMiddlewares(route.middlewares);
+
+        console.log(`${endpoint} => ${method}`);
+        app[method](endpoint, requiredMiddlewares, handler);
       });
     });
   });
