@@ -1,4 +1,4 @@
-import { createActivity, getActivity } from "@/controllers/";
+import { createActivity, getActivity } from "@/controllers";
 import cors from "cors";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
