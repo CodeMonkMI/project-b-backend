@@ -29,5 +29,18 @@ services:
       - "5050:80"
       - "5051:443"
 
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8081
+    environment:
+      - PORT=8081
+      - SERVICE_NAME='Api gateway'
+    volumes:
+      - ./api-gateway:/app
+
 volumes:
   postgres:
