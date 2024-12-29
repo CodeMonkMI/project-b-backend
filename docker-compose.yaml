@@ -1,8 +1,8 @@
 version: "3.8"
 services:
-  postgres:
+  db:
+    container_name: database_server
     image: postgres:13
-    container_name: postgres
     restart: on-failure
     environment:
       POSTGRES_USER: postgres
@@ -17,6 +17,8 @@ services:
       interval: 30s
       timeout: 30s
       retries: 3
+    networks:
+      - my_network
 
   pgadmin:
     image: dpage/pgadmin4
@@ -28,6 +30,10 @@ services:
     ports:
       - "5050:80"
       - "5051:443"
+    depends_on:
+      - db
+    networks:
+      - my_network
 
   api-gateway:
     container_name: api-gateway
@@ -41,6 +47,29 @@ services:
       - SERVICE_NAME='Api gateway'
     volumes:
       - ./api-gateway:/app
+    networks:
+      - my_network
+
+  request:
+    container_name: donation-request
+    build:
+      context: ./services/request
+      dockerfile: Dockerfile
+    ports:
+      - 5001:5001
+    env_file:
+      - ./services/request/.env
+    volumes:
+      - ./services/request:/app
+    depends_on:
+      - db
+    networks:
+      - my_network
+    command: sh -c "npx prisma migrate dev && yarn dev"
 
 volumes:
   postgres:
+
+networks:
+  my_network:
+    driver: bridge
