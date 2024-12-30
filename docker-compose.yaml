@@ -57,8 +57,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - 5001:5001
-    env_file:
-      - ./services/request/.env
+    environment:
+      - SERVICE_NAME=Donation Request Service
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/donation_request_db?schema=public
+      - PORT=5001
     volumes:
       - ./services/request:/app
     depends_on:
@@ -66,6 +68,27 @@ services:
     networks:
       - my_network
     command: sh -c "npx prisma migrate dev && yarn dev"
+
+  auth:
+    container_name: auth
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    ports:
+      - 5005:5005
+    environment:
+      - SERVICE_NAME=Donation Request Service
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/auth_db?schema=public
+      - PORT=5005
+      - JWT_SECRET=my-secret
+    volumes:
+      - ./services/auth:/app
+    depends_on:
+      - db
+    networks:
+      - my_network
+    command: sh -c "npx prisma migrate dev && yarn dev"
+    platform: linux/amd64
 
 volumes:
   postgres:

@@ -1,7 +1,7 @@
 import prisma from "@/prisma";
 import { SignInSchema, TokenDataSchema } from "@/schemas";
 import { LoginAttempt } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";

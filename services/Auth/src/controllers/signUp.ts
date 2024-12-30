@@ -2,7 +2,7 @@ import { NOTIFICATION_SERVICE } from "@/config";
 import prisma from "@/prisma";
 import { SignUpSchema, TokenDataSchema } from "@/schemas";
 import axios from "axios";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 const SALT_ROUND = process.env.SALT_ROUND;
