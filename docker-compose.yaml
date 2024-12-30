@@ -90,6 +90,24 @@ services:
     command: sh -c "npx prisma migrate dev && yarn dev"
     platform: linux/amd64
 
+  history:
+    container_name: donation-history
+    build:
+      context: ./services/history
+      dockerfile: Dockerfile
+    ports:
+      - 5002:5002
+    environment:
+      - PORT=5002
+      - SERVICE_NAME=Donation History Service
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/donation_history_db?schema=public
+    volumes:
+      - ./services/history:/app
+    depends_on:
+      - db
+    networks:
+      - my_network
+    command: sh -c "npx prisma migrate dev && yarn dev"
 volumes:
   postgres:
 
