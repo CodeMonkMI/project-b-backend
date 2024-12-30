@@ -108,6 +108,26 @@ services:
     networks:
       - my_network
     command: sh -c "npx prisma migrate dev && yarn dev"
+
+  notification:
+    container_name: notifications
+    build:
+      context: ./services/notifications
+      dockerfile: Dockerfile
+    ports:
+      - 5003:5003
+    environment:
+      - PORT=5003
+      - SERVICE_NAME=Notifications Service
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/notification_db?schema=public
+    volumes:
+      - ./services/notifications:/app
+    depends_on:
+      - db
+    networks:
+      - my_network
+    command: sh -c "npx prisma migrate dev && yarn dev"
+
 volumes:
   postgres:
 
