@@ -77,7 +77,7 @@ services:
     ports:
       - 5005:5005
     environment:
-      - SERVICE_NAME=Donation Request Service
+      - SERVICE_NAME=Auth Service
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/auth_db?schema=public
       - PORT=5005
       - JWT_SECRET=my-secret
@@ -122,6 +122,25 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/notification_db?schema=public
     volumes:
       - ./services/notifications:/app
+    depends_on:
+      - db
+    networks:
+      - my_network
+    command: sh -c "npx prisma migrate dev && yarn dev"
+
+  activity:
+    container_name: activity
+    build:
+      context: ./services/activity
+      dockerfile: Dockerfile
+    ports:
+      - 5004:5004
+    environment:
+      - PORT=5004
+      - SERVICE_NAME='ACTIVITY SERVICE'
+      - DATABASE_URL='postgresql://postgres:postgres@db:5433/activity_db?schema=public'
+    volumes:
+      - ./services/activity:/app
     depends_on:
       - db
     networks:
