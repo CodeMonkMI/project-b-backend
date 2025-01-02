@@ -1,3 +1,4 @@
+import { LoginAttempt } from "@prisma/client";
 import { z } from "zod";
 
 export const SignInSchema = z.object({
@@ -23,3 +24,13 @@ export const TokenDataSchema = z.object({
 export const VerifyTokenSchema = z.object({
   accessToken: z.string(),
 });
+
+export const LoginHistorySchema = z.object({
+  attempt: z.nativeEnum(LoginAttempt),
+  ipAddress: z.string(),
+  userAgent: z.string(),
+  userId: z.string(),
+});
+
+export type LoginHistoryType = z.infer<typeof LoginHistorySchema>;
+export type TokenRequiredType = z.infer<typeof TokenDataSchema>;
