@@ -138,7 +138,7 @@ services:
     environment:
       - PORT=5004
       - SERVICE_NAME='ACTIVITY SERVICE'
-      - DATABASE_URL='postgresql://postgres:postgres@db:5433/activity_db?schema=public'
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/activity_db?schema=public
     volumes:
       - ./services/activity:/app
     depends_on:
