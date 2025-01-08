@@ -1,5 +1,5 @@
 import { blood_type, PrismaClient, Role } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
 import generateUsername from "../helpers/generateUsername";
