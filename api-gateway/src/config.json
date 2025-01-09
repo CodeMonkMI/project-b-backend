@@ -173,22 +173,18 @@
             "url": "http://localhost:5005",
             "routes": [
                 {
-                    "path": "/signin",
+                    "path": "/auth/signin",
                     "methods": [
                         "post"
                     ],
-                    "middlewares": [
-                        "auth"
-                    ]
+                    "middlewares": []
                 },
                 {
-                    "path": "/signup",
+                    "path": "/auth/signup",
                     "methods": [
                         "post"
                     ],
-                    "middlewares": [
-                        "auth"
-                    ]
+                    "middlewares": []
                 }
             ]
         }

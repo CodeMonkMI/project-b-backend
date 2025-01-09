@@ -6,7 +6,7 @@ import middlewares from "./middlewares";
 const createHandler = (hostname: string, path: string, method: string) => {
   return async (req: Request, res: Response) => {
     try {
-      let url: string = `${hostname}${path}`;
+      let url = `${hostname}${path}`;
       req.params &&
         Object.keys(req.params).forEach((param) => {
           url = url.replace(`:${param}`, req.params[param]);
@@ -20,9 +20,12 @@ const createHandler = (hostname: string, path: string, method: string) => {
           ...req.headers,
         },
       });
+
+      console.log(data);
       return res.json(data);
     } catch (error) {
       if (error instanceof axios.AxiosError) {
+        console.log(error.response);
         return res
           .status(error?.response?.status || 500)
           .json(error?.response?.data);
@@ -41,7 +44,7 @@ export const configureRoutes = (app: Express) => {
   Object.entries(config.services).forEach(([name, service]) => {
     service.routes.forEach((route) => {
       route.methods.forEach((method) => {
-        const endpoint = `/api/${service.prefix}${route.path}`;
+        const endpoint = `/api${route.path}`;
         const hostname = service.url;
         const handler = createHandler(hostname, route.path, method);
         const requiredMiddlewares = generateMiddlewares(route.middlewares);
