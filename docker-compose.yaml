@@ -32,21 +32,9 @@ services:
       - "5051:443"
     depends_on:
       - db
-    networks:
-      - my_network
-
-  api-gateway:
-    container_name: api-gateway
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    ports:
-      - 8081:8081
-    environment:
-      - PORT=8081
-      - SERVICE_NAME='Api gateway'
     volumes:
-      - ./api-gateway:/app
+      - pgadmin:/var/lib/pgadmin
+
     networks:
       - my_network
 
@@ -149,6 +137,7 @@ services:
 
 volumes:
   postgres:
+  pgadmin:
 
 networks:
   my_network:
