@@ -24,10 +24,10 @@ app.get("/health", (_req, res: Response) => {
     return res.status(500).json({ message: "DOWN" });
   }
 });
-app.get("/history", allHistory);
-app.get("/history/:requestId", singleHistory);
-app.post("/history/create", createHistory);
-app.delete("/history/:requestId", removeHistory);
+app.get("/all", allHistory);
+app.get("/:requestId", singleHistory);
+app.post("/create", createHistory);
+app.delete("/:requestId", removeHistory);
 
 // 404 not found handler
 app.use((_req, res: Response) => {
