@@ -31,16 +31,16 @@ app.get("/health", (_req, res: Response) => {
   }
 });
 // all routes
-app.get("/request/all", allRequest);
-app.post("/request/create", crateRequest);
-app.get("/request/details/:id", singleRequest);
-app.put("/request/approve/:id", approveRequest);
-app.put("/request/complete/:id", completeRequest);
-app.put("/request/decline/:id", declineRequest);
-app.put("/request/progress/:id", progressRequest);
-app.put("/request/hold/:id", holdRequest);
-app.put("/request/assign/:id", assignRequest);
-app.delete("/request/remove/:id", removeRequest);
+app.get("/all", allRequest);
+app.post("/create", crateRequest);
+app.get("/details/:id", singleRequest);
+app.put("/approve/:id", approveRequest);
+app.put("/complete/:id", completeRequest);
+app.put("/decline/:id", declineRequest);
+app.put("/progress/:id", progressRequest);
+app.put("/hold/:id", holdRequest);
+app.put("/assign/:id", assignRequest);
+app.delete("/remove/:id", removeRequest);
 
 // 404 not found handler
 app.use((_req, res: Response) => {
