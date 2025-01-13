@@ -32,9 +32,9 @@ if (!userRoleChecked) {
   userRoleChecked = true;
 }
 
-app.post("/auth/signin", signIn);
-app.post("/auth/signup", signUp);
-app.post("/auth/verify-token", verifyToken);
+app.post("/signin", signIn);
+app.post("/signup", signUp);
+app.post("/verify-token", verifyToken);
 
 // 404 not found handler
 app.use((_req, res: Response) => {
