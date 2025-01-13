@@ -1,0 +1,60 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: donation-history-service
+    protocol: http
+    host: host.docker.internal
+    port: 5002
+    # url: http://host.docker.internal:5002/api
+    routes:
+      - name: get-all-history
+        paths:
+          - /api/v1/history
+        methods:
+          - GET
+        strip_path: true
+        preserve_host: false
+        protocols:
+          - http
+          - https
+
+plugins:
+  - name: rate-limiting
+    config:
+      minute: 60
+      hour: 3600
+      policy: local
+      fault_tolerant: true
+  - name: cors
+    service: donation-history-service
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - DELETE
+      headers:
+        - Accept
+        - Accept-Version
+        - Content-Length
+        - Content-MD5
+        - Content-Type
+        - Date
+        - X-Auth-Token
+      exposed_headers:
+        - X-Auth-Token
+      credentials: true
+      max_age: 3600
+      preflight_continue: false
+
+  - name: response-transformer
+    service: donation-history-service
+    config:
+      add:
+        headers:
+          - X-Powered-By:Kong
+      remove:
+        headers:
+          - Server
