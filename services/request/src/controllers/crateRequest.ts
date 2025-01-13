@@ -31,14 +31,14 @@ export const create = async (
     });
 
     //   create request history
-    await axios.post(`${DONATION_HISTORY}/history/create`, {
+    await axios.post(`${DONATION_HISTORY}/create`, {
       type: "REQUEST",
       message: "An user asked for a blood request!",
       requestId: item.id,
     });
     if (user) {
       // create progress history
-      await axios.post(`${DONATION_HISTORY}/history/create`, {
+      await axios.post(`${DONATION_HISTORY}/create`, {
         type: "PROGRESS",
         message: "A request is in progress",
         requestId: item.id,
