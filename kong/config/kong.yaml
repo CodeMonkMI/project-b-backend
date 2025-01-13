@@ -18,6 +18,22 @@ services:
         protocols:
           - http
           - https
+  - name: auth-service
+    protocol: http
+    host: host.docker.internal
+    port: 5005
+
+    routes:
+      - name: auth-routes
+        paths:
+          - /api/v1/auth
+        methods:
+          - POST
+        strip_path: true
+        preserve_host: false
+        protocols:
+          - http
+          - https
 
 plugins:
   - name: rate-limiting
