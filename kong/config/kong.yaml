@@ -55,6 +55,41 @@ services:
           - http
           - https
 
+  - name: activity-service
+    protocol: http
+    host: host.docker.internal
+    port: 5004
+
+    routes:
+      - name: activity-routes
+        paths:
+          - /api/v1/activity
+        methods:
+          - GET
+        strip_path: true
+        preserve_host: false
+        protocols:
+          - http
+          - https
+
+  - name: notification-service
+    protocol: http
+    host: host.docker.internal
+    port: 5003
+
+    routes:
+      - name: notification-routes
+        paths:
+          - /api/v1/notification
+        methods:
+          - GET
+          - PUT
+        strip_path: true
+        preserve_host: false
+        protocols:
+          - http
+          - https
+
 plugins:
   - name: rate-limiting
     config:
