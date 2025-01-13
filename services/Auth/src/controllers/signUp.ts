@@ -99,7 +99,7 @@ export const signUp = async (
     });
 
     admins.forEach((admin) => {
-      axios.post(`${NOTIFICATION_SERVICE}/notification/create`, {
+      axios.post(`${NOTIFICATION_SERVICE}/create`, {
         type: "ACCOUNT",
         receiver: admin.id,
         message: "New account is created. Need to verify it",
