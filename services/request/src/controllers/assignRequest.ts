@@ -43,7 +43,7 @@ export const assign = async (
 
     //  create assign history
 
-    await axios.post(`${DONATION_HISTORY}/history/create`, {
+    await axios.post(`${DONATION_HISTORY}/create`, {
       type: "READY",
       message: "A donor has been assigned!",
       requestId: id,

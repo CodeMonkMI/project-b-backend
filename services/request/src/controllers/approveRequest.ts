@@ -37,7 +37,7 @@ export const approve = async (
     });
 
     // create approve history
-    await axios.post(`${DONATION_HISTORY}/history/create`, {
+    await axios.post(`${DONATION_HISTORY}/create`, {
       type: "APPROVE",
       message: "New request approved!",
       requestId: item.id,

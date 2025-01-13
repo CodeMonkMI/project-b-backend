@@ -35,7 +35,7 @@ export const hold = async (
     });
 
     // create hold history
-    await axios.post(`${DONATION_HISTORY}/history/create`, {
+    await axios.post(`${DONATION_HISTORY}/create`, {
       type: "HOLD",
       message: "Request is being hold!",
       requestId: id,

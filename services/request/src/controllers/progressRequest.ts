@@ -35,7 +35,7 @@ export const progress = async (
     });
 
     // create a progress  history
-    await axios.post(`${DONATION_HISTORY}/history/create`, {
+    await axios.post(`${DONATION_HISTORY}/create`, {
       type: "PROGRESS",
       message: "An user asked for a blood request!",
       requestId: id,

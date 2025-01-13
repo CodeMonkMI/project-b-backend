@@ -28,7 +28,7 @@ export const remove = async (
     });
 
     // create delete history
-    await axios.post(`${DONATION_HISTORY}/history/create`, {
+    await axios.post(`${DONATION_HISTORY}/create`, {
       type: "DELETED",
       message: "An user asked for a blood request!",
       requestId: id,

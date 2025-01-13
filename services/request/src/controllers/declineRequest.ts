@@ -33,7 +33,7 @@ export const decline = async (
     });
 
     //  create history for decline request
-    await axios.post(`${DONATION_HISTORY}/history/create`, {
+    await axios.post(`${DONATION_HISTORY}/create`, {
       type: "DECLINED",
       message: "Request is being declined!",
       requestId: id,

@@ -37,7 +37,7 @@ export const complete = async (
     // todo update user profile last donation date
 
     // crate a complete history
-    await axios.post(`${DONATION_HISTORY}/history/create`, {
+    await axios.post(`${DONATION_HISTORY}/create`, {
       type: "COMPLETE",
       message: "A request is been completed!",
       requestId: id,
