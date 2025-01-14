@@ -34,3 +34,11 @@ export const LoginHistorySchema = z.object({
 
 export type LoginHistoryType = z.infer<typeof LoginHistorySchema>;
 export type TokenRequiredType = z.infer<typeof TokenDataSchema>;
+
+export type ZodSingleError = {
+  code: string;
+  expected: string;
+  message: string;
+  path: string[];
+  received: string;
+};

@@ -1,5 +1,5 @@
 import prisma from "@/prisma";
-import { LoginHistoryType, SignInSchema } from "@/schemas";
+import { LoginHistoryType, SignInSchema, ZodSingleError } from "@/schemas";
 import { generateToken } from "@/utils/token";
 import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
@@ -48,14 +48,27 @@ export const signIn = async (
         },
       },
     });
-
-    if (!findUser)
-      return res.status(400).json({ message: "Invalid Credentials" });
+    const invalidMessage: ZodSingleError[] = [
+      {
+        code: "invalid_request",
+        expected: "correct_credentials",
+        received: "Invalid_credentials",
+        path: ["username"],
+        message: "Invalid Credentials",
+      },
+      {
+        code: "invalid_request",
+        expected: "correct_credentials",
+        received: "Invalid_credentials",
+        path: ["password"],
+        message: "Invalid Credentials",
+      },
+    ];
+    if (!findUser) return res.status(400).json({ errors: invalidMessage });
 
     const isPasswordOk = await bcrypt.compare(password, findUser.password);
 
-    if (!isPasswordOk)
-      return res.status(400).json({ message: "Invalid Credentials" });
+    if (!isPasswordOk) return res.status(400).json({ errors: invalidMessage });
 
     const statusWiseMessage: {
       [key: string]: string;
