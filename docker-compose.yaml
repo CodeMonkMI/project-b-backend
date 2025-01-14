@@ -1,5 +1,44 @@
-version: "3.8"
+volumes:
+  postgres:
+  pgadmin:
+  kong_data: {}
+
+networks:
+  my_network:
+    driver: bridge
+  kong-net:
+    name: kong-networks
+    driver: bridge
+
 services:
+  kong:
+    build:
+      context: ./kong/config
+      dockerfile: Dockerfile
+    container_name: kong-gateway
+    restart: unless-stopped
+    networks:
+      # kong-net:
+      # ipv4_address: 172.1.1.40
+      - kong-net
+    environment:
+      KONG_DATABASE: "off"
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
+      KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yml"
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
+      - "8443:8443"
+      - "8444:8444"
+    volumes:
+      - ./kong/kong.yaml:/usr/local/kong/declarative/kong.yml
+
   db:
     container_name: database_server
     image: postgres:13
@@ -134,11 +173,3 @@ services:
     networks:
       - my_network
     command: sh -c "npx prisma migrate dev && yarn dev"
-
-volumes:
-  postgres:
-  pgadmin:
-
-networks:
-  my_network:
-    driver: bridge
