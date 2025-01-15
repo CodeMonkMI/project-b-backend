@@ -8,3 +8,7 @@ export const CreateDonationHistoryDTOSchema = z.object({
   message: z.string(),
   requestId: z.string(),
 });
+
+export type CreateDonationHistoryDTO = z.infer<
+  typeof CreateDonationHistoryDTOSchema
+>;

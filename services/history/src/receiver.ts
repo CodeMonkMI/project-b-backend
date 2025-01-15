@@ -1,6 +1,8 @@
 const QUEUE_URL = "amqp://rabbitmq:5672";
 
 import amqp from "amqplib";
+import prisma from "./prisma";
+import { CreateDonationHistoryDTO } from "./schemas";
 
 const receiveFromQueue = async (
   queue: string,
@@ -26,9 +28,17 @@ const receiveFromQueue = async (
   }
 };
 
-receiveFromQueue("request-created", (msg) => {
-  console.log("request created. Data", msg);
-});
-receiveFromQueue("request-approved", (msg) => {
-  console.log("request approved. Data", msg);
+receiveFromQueue("request-handle-history", async (msg) => {
+  try {
+    // todo need to add type guard for safety
+    const data: CreateDonationHistoryDTO = JSON.parse(msg);
+    await prisma.donationHistory.create({
+      data: {
+        ...data,
+      },
+    });
+    console.log(`RabQ: History Created for Request ${data.type}`);
+  } catch (error) {
+    console.log(`RabbitMQ Error: request-handle`, msg, error);
+  }
 });

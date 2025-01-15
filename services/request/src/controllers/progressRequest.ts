@@ -1,7 +1,6 @@
-import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
+import sendToQueue from "@/sender";
 import { DONATION_STATUS } from "@prisma/client";
-import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 export const progress = async (
   req: Request<{ id: string }, {}, {}>,
@@ -35,11 +34,14 @@ export const progress = async (
     });
 
     // create a progress  history
-    await axios.post(`${DONATION_HISTORY}/create`, {
-      type: "PROGRESS",
-      message: "An user asked for a blood request!",
-      requestId: id,
-    });
+    sendToQueue(
+      "request-handle-history",
+      JSON.stringify({
+        type: "PROGRESS",
+        message: "An user asked for a blood request!",
+        requestId: id,
+      })
+    );
 
     // todo create notification for request user
 

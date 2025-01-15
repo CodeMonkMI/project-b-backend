@@ -1,7 +1,6 @@
-import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
+import sendToQueue from "@/sender";
 import { DONATION_STATUS } from "@prisma/client";
-import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const complete = async (
@@ -37,11 +36,14 @@ export const complete = async (
     // todo update user profile last donation date
 
     // crate a complete history
-    await axios.post(`${DONATION_HISTORY}/create`, {
-      type: "COMPLETE",
-      message: "A request is been completed!",
-      requestId: id,
-    });
+    sendToQueue(
+      "request-handle-history",
+      JSON.stringify({
+        type: "COMPLETE",
+        message: "A request is been completed!",
+        requestId: id,
+      })
+    );
 
     // todo create notification for donor and request user
 

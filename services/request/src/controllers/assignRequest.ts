@@ -1,7 +1,6 @@
-import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
+import sendToQueue from "@/sender";
 import { DONATION_STATUS } from "@prisma/client";
-import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
@@ -43,11 +42,14 @@ export const assign = async (
 
     //  create assign history
 
-    await axios.post(`${DONATION_HISTORY}/create`, {
-      type: "READY",
-      message: "A donor has been assigned!",
-      requestId: id,
-    });
+    sendToQueue(
+      "request-handle-history",
+      JSON.stringify({
+        type: "READY",
+        message: "A donor has been assigned!",
+        requestId: id,
+      })
+    );
 
     // todo create notification for assigned donor
     // todo create notification for requested user

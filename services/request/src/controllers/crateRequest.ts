@@ -30,20 +30,24 @@ export const create = async (
     });
 
     //   create request history
-    // await axios.post(`${DONATION_HISTORY}/create`, {
-    //   type: "REQUEST",
-    //   message: "An user asked for a blood request!",
-    //   requestId: item.id,
-    // });
-    sendToQueue("request-created", item.id);
+
+    sendToQueue(
+      "request-handle-history",
+      JSON.stringify({
+        type: "REQUEST",
+        message: "An user asked for a blood request!",
+        requestId: item.id,
+      })
+    );
     if (user) {
-      // create progress history
-      // await axios.post(`${DONATION_HISTORY}/create`, {
-      //   type: "PROGRESS",
-      //   message: "A request is in progress",
-      //   requestId: item.id,
-      // });
-      sendToQueue("request-approved", item.id);
+      sendToQueue(
+        "request-handle-history",
+        JSON.stringify({
+          type: "PROGRESS",
+          message: "A request is in progress",
+          requestId: item.id,
+        })
+      );
     }
 
     // todo create notification
@@ -51,7 +55,7 @@ export const create = async (
 
     return res.status(201).json({
       message:
-        "You request accepted! We will let you know via email or call you directly!",
+        "Your request accepted! We will let you know via email or call you directly!",
       data: item,
     });
   } catch (error) {
