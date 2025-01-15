@@ -7,6 +7,7 @@ import {
 import cors from "cors";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
+import "./receiver";
 
 const app: Express = express();
 

@@ -6,3 +6,5 @@ export const NotificationDTOSchema = z.object({
   message: z.string().min(10).max(255),
   receiver: z.string(),
 });
+
+export type NotificationDTO = z.infer<typeof NotificationDTOSchema>;
