@@ -2,6 +2,7 @@ volumes:
   postgres:
   pgadmin:
   kong_data: {}
+  rabbitmq_data:
 
 networks:
   my_network:
@@ -92,6 +93,7 @@ services:
       - ./services/request:/app
     depends_on:
       - db
+      - rabbitmq
     networks:
       - my_network
     command: sh -c "npx prisma migrate dev && yarn dev"
@@ -173,3 +175,14 @@ services:
     networks:
       - my_network
     command: sh -c "npx prisma migrate dev && yarn dev"
+
+  rabbitmq:
+    container_name: RabbitMQ
+    image: rabbitmq:3.8-management
+    ports:
+      - "5672:5672" # RabbitMQ main port
+      - "15672:15672" # RabbitMQ management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - my_network

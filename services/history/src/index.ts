@@ -7,6 +7,7 @@ import {
   removeHistory,
   singleHistory,
 } from "./controllers";
+import "./receiver";
 
 const app: Express = express();
 
