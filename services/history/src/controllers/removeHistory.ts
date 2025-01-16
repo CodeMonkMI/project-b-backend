@@ -11,7 +11,15 @@ export const removeHistory = async (
 ) => {
   try {
     const requestId = req.params.requestId;
-    await axios.get(`${REQUEST_SERVICE}/request/details/${requestId}`);
+    const request = await axios.get(
+      `${REQUEST_SERVICE}/request/details/${requestId}`
+    );
+    if (!request) {
+      return res.status(404).json({
+        message: "History not found",
+        data: null,
+      });
+    }
 
     const data = await prisma.donationHistory.findMany({
       where: {
