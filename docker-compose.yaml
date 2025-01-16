@@ -175,6 +175,24 @@ services:
     networks:
       - my_network
     command: sh -c "npx prisma migrate dev && yarn dev"
+  user:
+    container_name: user
+    build:
+      context: ./services/user
+      dockerfile: Dockerfile
+    ports:
+      - 5006:5006
+    environment:
+      - PORT=5006
+      - SERVICE_NAME='User SERVICE'
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/user_db?schema=public
+    volumes:
+      - ./services/user:/app
+    depends_on:
+      - db
+    networks:
+      - my_network
+    command: sh -c "npx prisma migrate dev && yarn dev"
 
   rabbitmq:
     container_name: RabbitMQ
