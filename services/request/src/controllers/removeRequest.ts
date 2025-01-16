@@ -1,6 +1,5 @@
-import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
-import axios from "axios";
+import sendToQueue from "@/sender";
 import { NextFunction, Request, Response } from "express";
 
 export const remove = async (
@@ -28,11 +27,15 @@ export const remove = async (
     });
 
     // create delete history
-    await axios.post(`${DONATION_HISTORY}/create`, {
-      type: "DELETED",
-      message: "An user asked for a blood request!",
-      requestId: id,
-    });
+    sendToQueue(
+      "request-handle-history",
+      JSON.stringify({
+        type: "DELETED",
+        message: "An user asked for a blood request!",
+        requestId: id,
+      })
+    );
+
     // todo create notification for requested id
 
     return res.status(204).json({

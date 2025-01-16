@@ -1,7 +1,6 @@
-import { NOTIFICATION_SERVICE } from "@/config";
 import prisma from "@/prisma";
 import { SignUpSchema, TokenDataSchema } from "@/schemas";
-import axios from "axios";
+import sendToQueue from "@/sender";
 import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
@@ -98,13 +97,14 @@ export const signUp = async (
       },
     });
 
-    admins.forEach((admin) => {
-      axios.post(`${NOTIFICATION_SERVICE}/create`, {
+    sendToQueue(
+      "auth-signup",
+      JSON.stringify({
         type: "ACCOUNT",
-        receiver: admin.id,
+        receiver: admins.map((i) => i.id),
         message: "New account is created. Need to verify it",
-      });
-    });
+      })
+    );
 
     return res.status(200).json({
       isSuccess: true,

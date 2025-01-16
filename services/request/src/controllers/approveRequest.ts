@@ -1,8 +1,7 @@
-import { DONATION_HISTORY } from "@/cofig";
 import prisma from "@/prisma";
+import sendToQueue from "@/sender";
 import SELECT_REQUEST from "@/utils/selectUser";
 import { DONATION_STATUS } from "@prisma/client";
-import axios from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const approve = async (
@@ -37,11 +36,15 @@ export const approve = async (
     });
 
     // create approve history
-    await axios.post(`${DONATION_HISTORY}/create`, {
-      type: "APPROVE",
-      message: "New request approved!",
-      requestId: item.id,
-    });
+    sendToQueue(
+      "request-handle-history",
+      JSON.stringify({
+        type: "APPROVE",
+        message: "New request approved!",
+        requestId: item.id,
+      })
+    );
+
     // todo send notification who asked for donation
 
     return res.status(202).json({
