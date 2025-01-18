@@ -91,6 +91,25 @@ services:
         protocols:
           - http
           - https
+  - name: user-service
+    protocol: http
+    host: host.docker.internal
+    port: 5006
+
+    routes:
+      - name: user-routes
+        paths:
+          - /api/v1/user
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        strip_path: true
+        preserve_host: false
+        protocols:
+          - http
+          - https
 
 plugins:
   - name: rate-limiting

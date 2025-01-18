@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BLOOD_GROUP {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+model Role {
+  id        String   @id @default(cuid())
+  name      String
+  role      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+}
+
+model User {
+  id         String    @id @default(cuid())
+  username   String    @unique
+  email      String    @unique
+  password   String
+  roleId     String
+  profile    Profile?
+  isVerified Boolean   @default(false)
+  isDelete   Boolean   @default(false)
+  deleteAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  role       Role      @relation(fields: [roleId], references: [id])
+}
+
+model Profile {
+  id            String      @id @default(cuid())
+  firstName     String
+  lastName      String
+  displayName   String?
+  fatherName    String?
+  motherName    String?
+  address       String?
+  streetAddress String?
+  upzila        String?
+  zila          String?
+  phoneNo       String?
+  lastDonation  DateTime?
+  bloodGroup    BLOOD_GROUP
+  image         String?
+  userId        String      @unique
+  user          User        @relation(fields: [userId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
