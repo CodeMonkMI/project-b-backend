@@ -2,6 +2,14 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
+import {
+  createUser,
+  deleteUser,
+  getAllUser,
+  getSingleUser,
+  removeUser,
+  updateUser,
+} from "./controllers";
 
 dotenv.config();
 
@@ -23,6 +31,15 @@ app.get("/health", (_req, res: Response) => {
 });
 
 // define all routes
+app.get("/all", getAllUser);
+app.get("/single/:id", getSingleUser);
+app.post("/", createUser);
+app.put("/:id", updateUser);
+app.delete("/remove/:id", removeUser);
+app.delete("/confirm/:id", deleteUser);
+
+// todo promote user route
+// todo demote user route
 
 // 404 not found handler
 app.use((_req, res: Response) => {
