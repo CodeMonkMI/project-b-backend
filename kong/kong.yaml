@@ -18,6 +18,10 @@ services:
         protocols:
           - http
           - https
+    plugins:
+      - name: custom_authenticate
+        config:
+          validation_endpoint: "http://host.docker.internal:5005/verify-token"
 
   - name: auth-service
     protocol: http
