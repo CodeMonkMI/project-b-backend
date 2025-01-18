@@ -15,7 +15,7 @@ export const removeUser = async (
       },
     });
 
-    return res.status(201).json({
+    return res.status(200).json({
       isSuccess: true,
       message: "User delete request success! An Super will look into it.",
       data: null,

@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
+import checkUserRole from "./checkUserrole";
 import {
   createUser,
   deleteUser,
@@ -29,6 +30,8 @@ app.get("/health", (_req, res: Response) => {
     return res.status(500).json({ message: "DOWN" });
   }
 });
+
+checkUserRole();
 
 // define all routes
 app.get("/all", getAllUser);

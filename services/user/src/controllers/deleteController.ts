@@ -15,7 +15,7 @@ export const deleteUser = async (
       },
     });
 
-    return res.status(201).json({
+    return res.status(200).json({
       isSuccess: true,
       message: "User deleted Successfully!",
       data: null,

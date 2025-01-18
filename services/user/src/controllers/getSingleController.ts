@@ -1,3 +1,4 @@
+import ProfileSelector from "@/lib/selectors/Profile";
 import UserSelector from "@/lib/selectors/User";
 import prisma from "@/prisma";
 import { NextFunction, Request, Response } from "express";
@@ -8,9 +9,14 @@ export const getSingleUser = async (
   next: NextFunction
 ) => {
   try {
-    const data = await prisma.user.findMany({
+    const data = await prisma.user.findUnique({
       where: { id: req.params.id },
-      select: UserSelector.getSingle(),
+      select: {
+        ...UserSelector.getSingle(),
+        profile: {
+          select: ProfileSelector.getDefault(),
+        },
+      },
     });
 
     return res.status(200).json({

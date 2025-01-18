@@ -40,6 +40,8 @@ export const createUser = async (
       });
     }
 
+    // todo check auth user if exist
+
     const role = await prisma.role.findUnique({ where: { role: "user" } });
     if (!role) {
       console.log("there no role exist");
@@ -67,6 +69,13 @@ export const createUser = async (
         username,
         roleId: role?.id,
         password: hash,
+        profile: {
+          create: {
+            firstName,
+            lastName,
+            bloodGroup: parsedData.data.bloodGroup,
+          },
+        },
       },
     });
 
