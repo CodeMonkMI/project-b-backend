@@ -150,7 +150,7 @@ plugins:
     config:
       add:
         headers:
-          - X-Powered-By:Kong
+          - X-Powered-By:Kong-data
       remove:
         headers:
           - Server

@@ -45,6 +45,20 @@ services:
     volumes:
       - ./kong/kong.yaml:/usr/local/kong/declarative/kong.yml
 
+  kong-watcher:
+    build:
+      context: .
+      dockerfile: kong-watcher.Dockerfile
+    container_name: kong-watcher
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./kong:/app/kong
+        - .:/app
+    networks:
+      - kong-net
+    depends_on:
+      - kong
+
   db:
     container_name: database_server
     image: postgres:13
