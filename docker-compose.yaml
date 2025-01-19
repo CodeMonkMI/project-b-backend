@@ -14,7 +14,7 @@ networks:
 services:
   kong:
     build:
-      context: ./kong/config
+      context: ./kong
       dockerfile: Dockerfile
     container_name: kong-gateway
     restart: unless-stopped
@@ -26,6 +26,11 @@ services:
       KONG_DATABASE: "off"
       KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
       KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yml"
+      KONG_PLUGINSERVER_NAMES: js
+      KONG_PLUGINSERVER_JS_SOCKET: /usr/local/kong/js_pluginserver.sock
+      KONG_PLUGINSERVER_JS_START_CMD: /usr/local/bin/kong-js-pluginserver -v --plugins-directory /usr/local/kong/js-plugins
+      KONG_PLUGINSERVER_JS_QUERY_CMD: /usr/local/bin/kong-js-pluginserver --plugins-directory /usr/local/kong/js-plugins --dump-all-plugins
+      KONG_PLUGINS: bundled,custom_authenticate
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
