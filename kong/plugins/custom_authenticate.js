@@ -23,7 +23,7 @@ class CustomAuthenticate {
         });
       }
       console.log("has token!");
-      const res = await axios.post(this.config.validation_url, {
+      const res = await axios.post(this.config.validation_endpoint, {
         accessToken: token,
       });
 
