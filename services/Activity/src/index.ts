@@ -2,6 +2,7 @@ import { createActivity, getActivity } from "@/controllers";
 import cors from "cors";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
+import generateAuthUser from "./middleware/generateAuthUser";
 
 const app: Express = express();
 
@@ -10,6 +11,7 @@ app.use(cors({ origin: true }));
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(generateAuthUser);
 
 // health route
 app.get("/health", (_req, res: Response) => {

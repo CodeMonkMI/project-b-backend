@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import { NextFunction, Request, Response } from "express";
 
 export const allHistory = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
