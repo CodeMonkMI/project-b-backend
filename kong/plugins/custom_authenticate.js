@@ -14,28 +14,23 @@ class CustomAuthenticate {
       const token = authHeader ? authHeader.split(" ")[1] : null;
 
       kong.log.notice(`Token: ${token}`);
-      console.log("got token", token);
 
       if (!token) {
-        console.log("not token");
         return await kong.response.exit(401, {
           message: "Unauthorized!",
         });
       }
-      console.log("has token!");
+
       const res = await axios.post(this.config.validation_endpoint, {
         accessToken: token,
       });
 
       if (res.status !== 200) {
-        console.log(res.data);
-        console.log("token in not valid");
         return await kong.response.exit(401, {
           message: "Unauthorized!",
         });
       }
       const user = res.data.user;
-      console.log("go user", user);
       kong.service.request.set_header("X-User-ID", user.id);
       kong.service.request.set_header("X-User-Username", user.username);
       kong.service.request.set_header("X-User-Email", user.email);
@@ -45,8 +40,11 @@ class CustomAuthenticate {
       return;
     } catch (error) {
       const message = error.message || "Unauthorized";
+
+      kong.log.notice(` >>> ${JSON.stringify(error)} <<< `);
+
       return await kong.response.exit(401, {
-        message,
+        message: "Unauthorized!",
       });
     }
   }

@@ -60,6 +60,10 @@ services:
         protocols:
           - http
           - https
+    plugins:
+      - name: custom_authenticate
+        config:
+          validation_endpoint: "http://host.docker.internal:5005/verify-token"
 
   - name: activity-service
     protocol: http
@@ -77,6 +81,10 @@ services:
         protocols:
           - http
           - https
+    plugins:
+      - name: custom_authenticate
+        config:
+          validation_endpoint: "http://host.docker.internal:5005/verify-token"
 
   - name: notification-service
     protocol: http
@@ -95,6 +103,11 @@ services:
         protocols:
           - http
           - https
+    plugins:
+      - name: custom_authenticate
+        config:
+          validation_endpoint: "http://host.docker.internal:5005/verify-token"
+
   - name: user-service
     protocol: http
     host: host.docker.internal
@@ -114,6 +127,10 @@ services:
         protocols:
           - http
           - https
+    plugins:
+      - name: custom_authenticate
+        config:
+          validation_endpoint: "http://host.docker.internal:5005/verify-token"
 
 plugins:
   - name: rate-limiting
