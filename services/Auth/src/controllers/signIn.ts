@@ -51,14 +51,14 @@ export const signIn = async (
     const invalidMessage: ZodSingleError[] = [
       {
         code: "invalid_request",
-        expected: "correct_credentials",
+        expected: "valid_credentials",
         received: "Invalid_credentials",
         path: ["username"],
         message: "Invalid Credentials",
       },
       {
         code: "invalid_request",
-        expected: "correct_credentials",
+        expected: "valid_credentials",
         received: "Invalid_credentials",
         path: ["password"],
         message: "Invalid Credentials",

@@ -13,6 +13,7 @@ services:
           - /api/v1/history
         methods:
           - GET
+          - OPTIONS
         strip_path: true
         preserve_host: false
         protocols:
@@ -55,6 +56,7 @@ services:
           - POST
           - PUT
           - DELETE
+          - OPTIONS
         strip_path: true
         preserve_host: false
         protocols:
@@ -76,6 +78,7 @@ services:
           - /api/v1/activity
         methods:
           - GET
+          - OPTIONS
         strip_path: true
         preserve_host: false
         protocols:
@@ -98,6 +101,7 @@ services:
         methods:
           - GET
           - PUT
+          - OPTIONS
         strip_path: true
         preserve_host: false
         protocols:
@@ -122,6 +126,7 @@ services:
           - POST
           - PUT
           - DELETE
+          - OPTIONS
         strip_path: true
         preserve_host: false
         protocols:
