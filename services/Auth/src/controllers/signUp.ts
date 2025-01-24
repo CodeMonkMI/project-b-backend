@@ -82,7 +82,18 @@ export const signUp = async (
       },
     });
 
-    // todo create user profile via user service
+    // create user profile via user service
+    const {} = parsedData;
+    sendToQueue(
+      "auth-user-signup",
+      JSON.stringify({
+        email,
+        firstName,
+        lastName,
+        role: role.role,
+        bloodGroup: parsedData.data.bloodGroup,
+      })
+    );
     // todo send mail to registered user
 
     // create a notification for admins

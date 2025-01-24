@@ -2,7 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { Express, Response } from "express";
 import morgan from "morgan";
-import checkUserRole from "./checkUserrole";
+
 import {
   createUser,
   deleteUser,
@@ -13,6 +13,7 @@ import {
   updateUser,
 } from "./controllers";
 import generateAuthUser from "./middleware/generateAuthUser";
+import start from "./receiver";
 
 dotenv.config();
 
@@ -33,8 +34,6 @@ app.get("/health", (_req, res: Response) => {
     return res.status(500).json({ message: "DOWN" });
   }
 });
-
-checkUserRole();
 
 // define all routes
 app.get("/all", getAllUser);
@@ -64,5 +63,6 @@ app.use((err: any, _req: any, res: Response, _next: any) => {
 const PORT = process.env.PORT || 5006;
 const SERVICE_NAME = process.env.SERVICE_NAME || "User Service";
 app.listen(PORT, () => {
+  start();
   console.log(`${SERVICE_NAME}  is running on port ${PORT}`);
 });

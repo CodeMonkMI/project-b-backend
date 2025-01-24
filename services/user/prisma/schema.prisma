@@ -24,28 +24,17 @@ enum BLOOD_GROUP {
   O_NEGATIVE
 }
 
-model Role {
-  id        String   @id @default(cuid())
-  name      String
-  role      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
-}
-
 model User {
   id         String    @id @default(cuid())
   username   String    @unique
   email      String    @unique
-  password   String
-  roleId     String
+  role       String?   @default("user")
   profile    Profile?
   isVerified Boolean   @default(false)
   isDelete   Boolean   @default(false)
   deleteAt   DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
-  role       Role      @relation(fields: [roleId], references: [id])
 }
 
 model Profile {

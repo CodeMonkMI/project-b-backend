@@ -51,3 +51,13 @@ export const AuthUserSchema = z.object({
 });
 
 export type AuthUser = z.infer<typeof AuthUserSchema>;
+
+export const CreateAuthUserDTOSchema = z.object({
+  email: z.string({ message: "Email is required!" }),
+  firstName: z.string(),
+  username: z.string(),
+  lastName: z.string(),
+  bloodGroup: z.nativeEnum(BLOOD_GROUP),
+  role: z.string(),
+});
+export type CreateAuthUserDTO = z.infer<typeof CreateAuthUserDTOSchema>;

@@ -7,12 +7,7 @@ class Selector {
     isVerified: true,
     isDelete: true,
     createdAt: true,
-    role: {
-      select: {
-        name: true,
-        role: true,
-      },
-    },
+    role: true,
   };
   public getSingle() {
     return this.defaultSelector;

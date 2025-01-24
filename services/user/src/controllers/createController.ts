@@ -1,9 +1,6 @@
-import { SALT_ROUND } from "@/config";
-import generatePassword from "@/lib/core/generatePassword";
-import generateUsername from "@/lib/core/generateUsername";
+import generateUniqueUsername from "@/lib/core/generateUniqueUsername";
 import prisma from "@/prisma";
 import { CreateUserDTOSchema } from "@/schemas";
-import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
 
 export const createUser = async (
@@ -42,33 +39,12 @@ export const createUser = async (
 
     // todo check auth user if exist
 
-    const role = await prisma.role.findUnique({ where: { role: "user" } });
-    if (!role) {
-      console.log("there no role exist");
-      return res.status(500).json({ message: "Internal server error" });
-    }
-
-    let username = generateUsername(firstName + " " + lastName);
-    while (true) {
-      const data = await prisma.user.findFirst({
-        where: { username },
-      });
-      if (!data) {
-        break;
-      }
-      username = generateUsername(firstName + " " + lastName);
-    }
-
-    const password = generatePassword();
-    const salt = await bcrypt.genSalt(SALT_ROUND ? parseInt(SALT_ROUND) : 10);
-    const hash = await bcrypt.hash(password, salt);
+    const username = await generateUniqueUsername(firstName, lastName);
 
     const newUser = await prisma.user.create({
       data: {
         email,
         username,
-        roleId: role?.id,
-        password: hash,
         profile: {
           create: {
             firstName,
