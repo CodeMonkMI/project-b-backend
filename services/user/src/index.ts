@@ -8,6 +8,7 @@ import {
   deleteUser,
   getAllUser,
   getSingleUser,
+  me,
   removeUser,
   updateUser,
 } from "./controllers";
@@ -42,6 +43,9 @@ app.post("/", createUser);
 app.put("/:id", updateUser);
 app.delete("/remove/:id", removeUser);
 app.delete("/confirm/:id", deleteUser);
+
+// me routes
+app.get("/me", me);
 
 // todo promote user route
 // todo demote user route

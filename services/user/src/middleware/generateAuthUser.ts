@@ -1,17 +1,10 @@
+import { AuthUser } from "@/schemas";
 import { NextFunction, Request, Response } from "express";
-
-export type AuthUser = {
-  id: string;
-  username: string;
-  email: string;
-  status: string;
-  role: string;
-};
 
 declare global {
   namespace Express {
     interface Request {
-      user?: AuthUser;
+      user: AuthUser;
     }
   }
 }

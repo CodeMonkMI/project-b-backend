@@ -41,3 +41,13 @@ export type ZodSingleError = {
   path: string[];
   received: string;
 };
+
+export const AuthUserSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  email: z.string(),
+  status: z.string(),
+  role: z.string(),
+});
+
+export type AuthUser = z.infer<typeof AuthUserSchema>;
