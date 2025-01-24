@@ -2,7 +2,6 @@ class Selector {
   private defaultSelector = {
     id: true,
     email: true,
-    password: true,
     username: true,
     isVerified: true,
     isDelete: true,

@@ -90,6 +90,7 @@ export const signUp = async (
         email,
         firstName,
         lastName,
+        username,
         role: role.role,
         bloodGroup: parsedData.data.bloodGroup,
       })

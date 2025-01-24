@@ -1,5 +1,4 @@
 import amqp from "amqplib";
-import generateUniqueUsername from "./lib/core/generateUniqueUsername";
 import prisma from "./prisma";
 import { CreateAuthUserDTO } from "./schemas";
 
@@ -45,9 +44,10 @@ const start = () => {
         firstName,
         lastName,
         role,
+        username,
       }: CreateAuthUserDTO = JSON.parse(msg);
       console.log("auth-user-signup data received");
-      const username = await generateUniqueUsername(firstName, lastName);
+
       const newUser = await prisma.user.create({
         data: {
           email,
