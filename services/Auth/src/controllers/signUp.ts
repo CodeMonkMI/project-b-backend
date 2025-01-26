@@ -1,11 +1,14 @@
+import Config from "@/config/AppConfig";
 import prisma from "@/prisma";
 import { SignUpSchema, TokenDataSchema } from "@/schemas";
 import sendToQueue from "@/sender";
 import bcrypt from "bcryptjs";
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
-const SALT_ROUND = process.env.SALT_ROUND;
 type TokenRequiredType = z.infer<typeof TokenDataSchema>;
+
+const { config } = Config.getInstance();
+const SALT_ROUND = config.authorization.saltRound;
 
 function generateUsername(name: string) {
   // Generate a random number between 1000 and 9999
