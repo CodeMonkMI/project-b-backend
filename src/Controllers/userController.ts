@@ -3,12 +3,12 @@ import { Request, Response } from "express";
 import { internalServerError } from "../helpers/errorResponses";
 import { Password } from "../lib/helpers/Password";
 import { StringHelper } from "../lib/helpers/StringHelper";
-import { nextRoleName, prevRoleName } from "../user//userHelpers";
 import {
   sendMailToAdminsForNewUser,
   sendMailToNewUser,
   sendMailToVerifiedUser,
 } from "../user/Mail";
+import { nextRoleName, prevRoleName } from "../user/userHelpers";
 
 interface SearchQuery {
   verified?: string;
