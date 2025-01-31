@@ -4,8 +4,8 @@ import { internalServerError } from "../helpers/errorResponses";
 import { Password } from "../lib/helpers/Password";
 import { StringHelper } from "../lib/helpers/StringHelper";
 import { Token } from "../lib/helpers/Token";
+import { AuthService } from "../services/auth.service";
 
-const SALT_ROUND = process.env.SALT_ROUND;
 const FORGOT_PASS_SECRET = process.env.FORGOT_PASS_SECRET;
 
 type UpdatePasswordRequestBody = {
@@ -22,52 +22,42 @@ type RequestBodyTypes = {
 export class AuthController {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly stringHelper: StringHelper
+    private readonly stringHelper: StringHelper,
+    private readonly authService: AuthService
   ) {}
 
   async signIn(req: Request, res: Response) {
-    this.catchError("signIN", res, async () => {
-      const { username, password }: RequestBodyTypes = req.body;
-      const errorMessage = {
-        username: "Username is incorrect!",
-        password: "Password is incorrect!",
-      };
-      const findUser = await this.prisma.user.findFirst({
-        where: {
-          OR: [{ username }, { email: username }],
-        },
-        select: {
-          email: true,
-          username: true,
-          password: true,
-          id: true,
-          isVerified: true,
-        },
+    const { username, password }: RequestBodyTypes = req.body;
+    const errorMessage = {
+      username: "Username is incorrect!",
+      password: "Password is incorrect!",
+    };
+
+    const findUser = await this.authService.findFirst({
+      OR: [{ username }, { email: username }],
+    });
+    if (!findUser) return res.status(400).json(errorMessage);
+
+    const isPasswordOk = Password.isMatched(password, findUser.password);
+
+    if (!isPasswordOk) return res.status(400).json(errorMessage);
+
+    if (!findUser.isVerified) {
+      return res.status(406).json({
+        message:
+          "You account is not yet activated! We will let you know when it activated!",
       });
+    }
 
-      if (!findUser) return res.status(400).json(errorMessage);
+    const token = Token.generateToken({
+      email: findUser.email,
+      id: findUser.id,
+      username: findUser.username,
+    });
 
-      const isPasswordOk = Password.isMatched(password, findUser.password);
-
-      if (!isPasswordOk) return res.status(400).json(errorMessage);
-
-      if (!findUser.isVerified) {
-        return res.status(406).json({
-          message:
-            "You account is not yet activated! We will let you know when it activated!",
-        });
-      }
-
-      const token = Token.generateToken({
-        email: findUser.email,
-        id: findUser.id,
-        username: findUser.username,
-      });
-
-      return res.status(200).json({
-        message: "Login was successful",
-        data: { token },
-      });
+    return res.status(200).json({
+      message: "Login was successful",
+      data: { token },
     });
   }
 
@@ -89,9 +79,7 @@ export class AuthController {
       } = req.body;
 
       const hash = Password.hash(password);
-      const role = await this.prisma.role.findUnique({
-        where: { role: "user" },
-      });
+      const role = await this.authService.findUniqueRole({ role: "user" });
       if (!role)
         return res.status(500).json({ message: "Internal server error" });
 
@@ -100,6 +88,23 @@ export class AuthController {
         lastName
       );
 
+      await this.authService.create({
+        email,
+        username,
+        password: hash,
+        role: {
+          connect: {
+            id: role.id!,
+          },
+        },
+        Profile: {
+          create: {
+            firstName,
+            lastName,
+            bloodGroup: blood,
+          },
+        },
+      });
       await this.prisma.user.create({
         data: {
           email,
