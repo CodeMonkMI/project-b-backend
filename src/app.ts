@@ -1,12 +1,30 @@
+import cors from "cors";
 import express, { Express } from "express";
-import setUpMiddleware from "./middleware";
+import passport from "passport";
+import authMiddleware from "./auth/authMiddleware";
 import setRoutes from "./routes";
 
-const app: Express = express();
+export const createApp = () => {
+  const app: Express = express();
+  // necessary middleware
 
-setUpMiddleware(app);
-setRoutes(app);
+  app.use(
+    cors({
+      origin: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    })
+  );
+  // app.use(morgan("dev"));
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
 
-app.listen(9000, () => {
-  console.log("Server is running on port 9000");
-});
+  // middleware setup for passport
+  app.use(passport.initialize());
+  authMiddleware(passport);
+
+  // register controller here
+
+  setRoutes(app);
+
+  return app;
+};
