@@ -1,21 +1,16 @@
 import { PrismaClient } from "@prisma/client";
 
-export interface IDatabaseClient {
+export type Client = PrismaClient;
+
+export interface IDatabase {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  getClient(): PrismaClient;
+  getClient(): Client;
   isConnected(): boolean;
   executeQuery<T>(
     label: string,
-    queryFn: (db: PrismaClient) => Promise<T>
+    queryFn: (db: Client) => Promise<T>
   ): Promise<T>;
 }
 
-export type DatabaseConfig = {
-  url: string;
-  maxConnection?: number;
-  idleTimeout?: number;
-  connectionTimeout?: number;
-  maxUses?: number;
-  ssl?: boolean;
-};
+export const DatabaseClientToken = Symbol("DatabaseClientToken");
